@@ -1,5 +1,7 @@
 #include "sdkconfig.h"
 #include "esp_system.h"
+#include "esp_check.h"
+#include "esp_err.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -8,12 +10,18 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "driver/gpio.h"
+#include "driver/i2c.h"
+#include "gpio_func.h"
+
+static const char *TAG = "GPIO";
 
 QueueHandle_t gpio_evt_queue = NULL;
+bool usermsg_send_start;
 
-static void IRAM_ATTR gpio_isr_handler(void* arg)
+static void IRAM_ATTR gpio_isr_handler(void *arg)
 {
-    uint32_t gpio_num = (uint32_t) arg;
+    uint32_t gpio_num = (uint32_t)arg;
+    usermsg_send_start = 1;
     xQueueSendFromISR(gpio_evt_queue, &gpio_num, NULL);
 }
 
@@ -25,7 +33,7 @@ static void IRAM_ATTR gpio_isr_handler(void* arg)
 //     }
 // }
 
-void gpio_init()
+esp_err_t gpio_init()
 {
     // 特别要注意I2S引脚当中的GPIO11，这个引脚目前还是VDD_SPI引脚，默认是一个电源引脚，输出3.3V
     // 我们需要把它变成GPIO11才可以使用。这个变化是不可逆的，变成GPIO11以后，就不能再变成VDD_SPI引脚了。
@@ -65,4 +73,17 @@ void gpio_init()
     gpio_install_isr_service(0);
     // hook isr handler for specific gpio pin
     gpio_isr_handler_add(GPIO_NUM_9, gpio_isr_handler, (void *)GPIO_NUM_9);
+
+    /* Initialize I2C peripheral */
+    const i2c_config_t es_i2c_cfg = {
+        .sda_io_num = I2C_SDA_IO,
+        .scl_io_num = I2C_SCL_IO,
+        .mode = I2C_MODE_MASTER,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .master.clk_speed = 100000,
+    };
+    ESP_RETURN_ON_ERROR(i2c_param_config(I2C_NUM, &es_i2c_cfg), TAG, "config i2c failed");
+    ESP_RETURN_ON_ERROR(i2c_driver_install(I2C_NUM, I2C_MODE_MASTER, 0, 0, 0), TAG, "install i2c driver failed");
+    return ESP_OK;
 }

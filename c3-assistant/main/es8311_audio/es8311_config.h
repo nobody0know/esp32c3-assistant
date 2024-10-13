@@ -13,28 +13,14 @@
 #define ES8311_SAMPLE_RATE     (16000)
 #define ES8311_MCLK_MULTIPLE   (384) // If not using 24-bit data width, 256 should be enough
 #define ES8311_MCLK_FREQ_HZ    (ES8311_SAMPLE_RATE * ES8311_MCLK_MULTIPLE)
-#define ES8311_VOICE_VOLUME    CONFIG_ES8311_VOICE_VOLUME
+#define ES8311_VOICE_VOLUME    70
 #if CONFIG_ES8311_MODE_ECHO
 #define ES8311_MIC_GAIN        CONFIG_ES8311_MIC_GAIN
 #endif
 
 #if !defined(CONFIG_ES8311_BSP)
 
-/* I2C port and GPIOs */
-#define I2C_NUM         (0)
-#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
-#define I2C_SCL_IO      (GPIO_NUM_16)
-#define I2C_SDA_IO      (GPIO_NUM_17)
-#elif CONFIG_IDF_TARGET_ESP32H2
-#define I2C_SCL_IO      (GPIO_NUM_8)
-#define I2C_SDA_IO      (GPIO_NUM_9)
-#elif CONFIG_IDF_TARGET_ESP32P4
-#define I2C_SCL_IO      (GPIO_NUM_8)
-#define I2C_SDA_IO      (GPIO_NUM_7)
-#else
-#define I2C_SCL_IO      (GPIO_NUM_1)
-#define I2C_SDA_IO      (GPIO_NUM_0)
-#endif
+
 
 /* I2S port and GPIOs */
 #define I2S_NUM         (0)

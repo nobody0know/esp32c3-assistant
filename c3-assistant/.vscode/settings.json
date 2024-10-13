@@ -11,7 +11,7 @@
     "idf.openOcdConfigs": [
         "board/esp32c3-builtin.cfg"
     ],
-    "idf.portWin": "COM29",
+    "idf.portWin": "COM3",
     "idf.pythonBinPathWin": "C:\\Users\\lc201\\.espressif\\python_env\\idf5.3_py3.11_env\\Scripts\\python.exe",
     "idf.toolsPathWin": "C:\\Users\\lc201\\.espressif",
     "idf.flashType": "UART",
@@ -23,6 +23,18 @@
         "i2c.h": "c",
         "semphr.h": "c",
         "esp_system.h": "c",
-        "gpio.h": "c"
+        "gpio.h": "c",
+        "queue.h": "c",
+        "task.h": "c",
+        "freertos.h": "c",
+        "stdlib.h": "c",
+        "string.h": "c",
+        "sdkconfig.h": "c",
+        "i2s_std.h": "c",
+        "esp_check.h": "c",
+        "esp32_wifi.h": "c",
+        "timers.h": "c",
+        "esp_log.h": "c",
+        "esp_mac.h": "c"
     }
 }

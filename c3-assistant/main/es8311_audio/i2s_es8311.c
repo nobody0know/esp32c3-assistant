@@ -14,9 +14,11 @@
 #include "esp_check.h"
 #include "es8311.h"
 #include "es8311_config.h"
+#include "gpio_func.h"
 // #include "esp_efuse_table.h"
 
 extern QueueHandle_t gpio_evt_queue;
+extern QueueHandle_t imu_evt_queue;
 
 static const char *TAG = "i2s_es8311";
 static const char err_reason[][30] = {"input param is invalid",
@@ -32,22 +34,6 @@ extern const uint8_t music_pcm_end[] asm("_binary_a_pcm_end");
 
 static esp_err_t es8311_codec_init(void)
 {
-    /* Initialize I2C peripheral */
-#if !defined(CONFIG_ES8311_BSP)
-    const i2c_config_t es_i2c_cfg = {
-        .sda_io_num = I2C_SDA_IO,
-        .scl_io_num = I2C_SCL_IO,
-        .mode = I2C_MODE_MASTER,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = 100000,
-    };
-    ESP_RETURN_ON_ERROR(i2c_param_config(I2C_NUM, &es_i2c_cfg), TAG, "config i2c failed");
-    ESP_RETURN_ON_ERROR(i2c_driver_install(I2C_NUM, I2C_MODE_MASTER, 0, 0, 0), TAG, "install i2c driver failed");
-#else
-    ESP_ERROR_CHECK(bsp_i2c_init());
-#endif
-
     /* Initialize es8311 codec */
     es8311_handle_t es_handle = es8311_create(I2C_NUM, ES8311_ADDRRES_0);
     ESP_RETURN_ON_FALSE(es_handle, ESP_FAIL, TAG, "es8311 create failed");
@@ -117,6 +103,7 @@ static void i2s_music(void *args)
     size_t bytes_write = 0;
     uint8_t *data_ptr = (uint8_t *)music_pcm_start;
     uint32_t io_num;
+    uint32_t atti_flag;
 
     /* (Optional) Disable TX channel and preload the data before enabling the TX channel,
      * so that the valid data can be transmitted immediately */
@@ -128,7 +115,7 @@ static void i2s_music(void *args)
     ESP_ERROR_CHECK(i2s_channel_enable(tx_handle));
     while (1)
     {
-        if (xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY))
+        if ((xQueueReceive(gpio_evt_queue, &io_num, 100)==pdTRUE)||(xQueueReceive(imu_evt_queue, &atti_flag, 100)==pdTRUE))
         {
             /* Write music to earphone */
             ret = i2s_channel_write(tx_handle, data_ptr, music_pcm_end - data_ptr, &bytes_write, portMAX_DELAY);
@@ -150,6 +137,10 @@ static void i2s_music(void *args)
                 abort();
             }
             data_ptr = (uint8_t *)music_pcm_start;
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
+        }
+        else
+        {
             vTaskDelay(1000 / portTICK_PERIOD_MS);
         }
     }
