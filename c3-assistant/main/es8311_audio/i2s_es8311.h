@@ -1,0 +1,1 @@
+extern void es8311_user_init(void);
