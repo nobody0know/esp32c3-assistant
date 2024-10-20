@@ -46,7 +46,7 @@ esp_err_t gpio_init()
     gpio_config_t io_conf = {
         .intr_type = GPIO_INTR_DISABLE, // disable interrupt
         .mode = GPIO_MODE_OUTPUT,       // set as output mode
-        .pin_bit_mask = 1 << 13,        // bit mask of the pins
+        .pin_bit_mask = 1 << GPIO_NUM_13,        // bit mask of the pins
         .pull_down_en = 0,              // disable pull-down mode
         .pull_up_en = 1,                // enable pull-up mode
     };
@@ -63,6 +63,32 @@ esp_err_t gpio_init()
     io_conf.pull_down_en = 0;               // disable pull-down mode
     io_conf.pull_up_en = 1;                 // enable pull-up mode
     gpio_config(&io_conf);                  // configure GPIO with the given settings
+
+    //配置墨水屏spi引脚
+    //CS
+    io_conf.intr_type = GPIO_INTR_DISABLE;  
+    io_conf.mode = GPIO_MODE_OUTPUT;         
+    io_conf.pin_bit_mask = 1 << GPIO_NUM_4; // bit mask of the pins GPIO4
+    io_conf.pull_down_en = 0;               
+    io_conf.pull_up_en = 0;                 
+    gpio_config(&io_conf);                  
+    //DC   
+    io_conf.pin_bit_mask = 1 << GPIO_NUM_6; // bit mask of the pins GPIO4             
+    gpio_config(&io_conf);
+
+    //bit mask of the pins that you want to set,e.g.GPIO18/19
+    io_conf.pin_bit_mask = 1 << GPIO_NUM_7;
+    //configure GPIO with the given settings
+    gpio_config(&io_conf);//复位
+ 
+    io_conf.intr_type = GPIO_INTR_NEGEDGE;//这里为啥要用下降沿来进行中断触发，存疑
+    //bit mask of the pins, use GPIO4/5 here
+    io_conf.pin_bit_mask = 1 << GPIO_NUM_2;
+    //set as input mode    
+    io_conf.mode = GPIO_MODE_INPUT;
+    //enable pull-up mode
+    io_conf.pull_up_en = 1;
+    gpio_config(&io_conf);
 
     // create a queue to handle gpio event from isr
     gpio_evt_queue = xQueueCreate(10, sizeof(uint32_t));
