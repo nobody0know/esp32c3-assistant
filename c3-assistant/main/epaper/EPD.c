@@ -25,7 +25,7 @@ void EPD_SPIInit(void)
     spi_device_interface_config_t devcfg = {
         .clock_speed_hz = 10 * 1000 * 1000, // 10 MHz，墨水屏通常使用较低的 SPI 时钟频率
         .mode = 0,                           // SPI 模式 0
-        .spics_io_num = GPIO_NUM_4,          // CS 引脚
+        .spics_io_num = PIN_NUM_CS,          // CS 引脚
         .queue_size = 7,                     // 事务队列大小
         .pre_cb = NULL,                      // 事务前的回调函数，可以用于控制 DC 引脚
     };

@@ -9,6 +9,7 @@ enum
     PIN_NUM_CLK  = GPIO_NUM_3,
     PIN_NUM_DC = GPIO_NUM_6,
     PIN_NUM_RST = GPIO_NUM_7,
+    PIN_NUM_CS = GPIO_NUM_4,
 };
 
 #define delay_ms(x)  vTaskDelay(x / portTICK_PERIOD_MS)
