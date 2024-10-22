@@ -2,7 +2,7 @@
 #include "driver/spi_master.h"
 #include "esp_log.h"
 
-static const char *TAG = "MAIN INIT";
+static const char *TAG = "EPD";
 
 static spi_device_handle_t spi;
 
@@ -10,7 +10,7 @@ void EPD_SPIInit(void)
 {
 	esp_err_t ret;
 	spi_bus_config_t buscfg = {
-		.miso_io_num = PIN_NUM_MISO, // MISO信号线
+		.miso_io_num = -1, // MISO信号线
 		.mosi_io_num = PIN_NUM_MOSI, // MOSI信号线
 		.sclk_io_num = PIN_NUM_CLK,	 // SCLK信号线
 		.quadwp_io_num = -1,		 // WP信号线，专用于QSPI的D2
@@ -31,8 +31,7 @@ void EPD_SPIInit(void)
     };
 	// Attach the epaper to the SPI bus
 	ret = spi_bus_add_device(SPI2_HOST, &devcfg, &spi);
-	    // 复位墨水屏
-		#define PIN_NUM_RST   7  // 复位引脚
+	// 复位墨水屏
     gpio_set_level(PIN_NUM_RST, 0);
     vTaskDelay(200 / portTICK_PERIOD_MS);
     gpio_set_level(PIN_NUM_RST, 1);
@@ -53,7 +52,7 @@ void eink_send_command(spi_device_handle_t spi, uint8_t command)
 
     esp_err_t ret = spi_device_transmit(spi, &t);
     ESP_ERROR_CHECK(ret);
-	gpio_set_level(PIN_NUM_DC, 1); // 设置 DC 为 0 表示发送命令
+	gpio_set_level(PIN_NUM_DC, 1); // 恢复默认写数据
 }
 
 void eink_send_data(spi_device_handle_t spi, uint8_t data)
@@ -67,7 +66,7 @@ void eink_send_data(spi_device_handle_t spi, uint8_t data)
 
     esp_err_t ret = spi_device_transmit(spi, &t);
     ESP_ERROR_CHECK(ret);
-	gpio_set_level(PIN_NUM_DC, 1); // 设置 DC 为 0 表示发送命令
+	gpio_set_level(PIN_NUM_DC, 1); 
 }
 
 void EPD_WR_REG(uint8_t reg)
@@ -86,7 +85,7 @@ void EPD_WR_DATA8(uint8_t data)
 *******************************************************************/
 void EPD_READBUSY(void)
 {
-	delay_ms(100);
+	delay_ms(100);//无需判忙，直接强行延时，墨水屏显示在此产品上不需要实时性
 	// while (1)
 	// {
 	// 	#define PIN_NUM_BUSY  2   // 忙碌信号引脚

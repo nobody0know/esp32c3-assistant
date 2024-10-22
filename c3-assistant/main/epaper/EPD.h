@@ -5,10 +5,10 @@
 #include "freertos/task.h"
 enum
 {
-    PIN_NUM_MISO = -1,
     PIN_NUM_MOSI = GPIO_NUM_5,
     PIN_NUM_CLK  = GPIO_NUM_3,
     PIN_NUM_DC = GPIO_NUM_6,
+    PIN_NUM_RST = GPIO_NUM_7,
 };
 
 #define delay_ms(x)  vTaskDelay(x / portTICK_PERIOD_MS)
