@@ -59,11 +59,16 @@ static void disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_
         }
 
     }
-	EPD_FastInit();
-	EPD_Display(Paint.Image);
-	EPD_FastUpdate();
-    EPD_DeepSleep();
+
+    EPD_Display(Paint.Image);
+	EPD_Update();
+	// EPD_DeepSleep();
 	delay_ms(1000);
+	// EPD_FastInit();
+	// EPD_Display(Paint.Image);
+	// EPD_FastUpdate();
+    // EPD_DeepSleep();
+	// delay_ms(1000);
 
     /*IMPORTANT!!!
      *Inform the graphics library that you are ready with the flushing*/
@@ -74,11 +79,16 @@ static void lv_port_disp_init(void)
 {
     static lv_disp_draw_buf_t draw_buf_dsc;
     static lv_disp_drv_t disp_drv;          /*A variable to hold the drivers. Must be static or global.*/
-    size_t disp_buf_height = 40;
+    size_t disp_buf_height = 20;
+
+    ESP_LOGI(TAG, "Initialize LVGL library");
+    lv_init();
  
     /* 必须从内部RAM分配显存，这样刷新速度快 */
-    lv_color_t *p_disp_buf1 = heap_caps_malloc(EPD_W * disp_buf_height * sizeof(lv_color_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
-    lv_color_t *p_disp_buf2 = heap_caps_malloc(EPD_W * disp_buf_height * sizeof(lv_color_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
+    lv_color_t *p_disp_buf1 = heap_caps_malloc(EPD_W * disp_buf_height * sizeof(lv_color_t), MALLOC_CAP_DMA);
+    assert(p_disp_buf1);
+    lv_color_t *p_disp_buf2 = heap_caps_malloc(EPD_W * disp_buf_height * sizeof(lv_color_t), MALLOC_CAP_DMA);
+    assert(p_disp_buf2);
     ESP_LOGI(TAG, "Try allocate two %u * %u display buffer, size:%u Byte", EPD_W, disp_buf_height, EPD_W * disp_buf_height * sizeof(lv_color_t) * 2);
     if (NULL == p_disp_buf1 || NULL == p_disp_buf2) {
         ESP_LOGE(TAG, "No memory for LVGL display buffer");
@@ -95,7 +105,7 @@ static void lv_port_disp_init(void)
     /*设置显示缓存*/
     disp_drv.draw_buf = &draw_buf_dsc;
     /*注册显示驱动*/
-    lv_disp_drv_register(&disp_drv);
+    lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
 }
 
 void lv_demo_button(void)
@@ -122,8 +132,8 @@ void lv_demo_button(void)
 
 void lvgl_gui_init()
 {
-    ESP_ERROR_CHECK(lv_port_tick_init());
     lv_port_disp_init();
+    ESP_ERROR_CHECK(lv_port_tick_init());
     lv_demo_button();
 }
 

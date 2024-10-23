@@ -6,6 +6,7 @@
 #include "EPD.h"
 #include "EPD_GUI.h"
 #include "lvgl_gui.h"
+#include "Pic.h"
 static const char *TAG = "MAIN INIT";
 
 void app_main()
@@ -38,11 +39,11 @@ void app_main()
 // 	EPD_DeepSleep();
 // 	delay_ms(1000);
 //   /*********************快刷模式**********************/
-// 	EPD_FastInit();
-// 	EPD_Display(gImage_2);
-// 	EPD_FastUpdate();
-// 	EPD_DeepSleep();
-// 	delay_ms(1000);
+	EPD_FastInit();
+	EPD_Display(gImage_2);
+	EPD_FastUpdate();
+	EPD_DeepSleep();
+	delay_ms(1000);
 
     // qmi8658c_init();
     // es8311_user_init();
