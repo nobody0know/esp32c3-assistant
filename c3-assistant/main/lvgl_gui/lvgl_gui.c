@@ -82,7 +82,7 @@ static void lv_port_disp_init(void)
     size_t disp_buf_height = 20;
 
     ESP_LOGI(TAG, "Initialize LVGL library");
-    lv_init();
+    lv_init();//must use before init lvgl display driver
  
     /* 必须从内部RAM分配显存，这样刷新速度快 */
     lv_color_t *p_disp_buf1 = heap_caps_malloc(EPD_W * disp_buf_height * sizeof(lv_color_t), MALLOC_CAP_DMA);
@@ -132,6 +132,8 @@ void lv_demo_button(void)
 
 void lvgl_gui_init()
 {
+    static int8_t image_buffer[EPD_W][EPD_H];
+    Paint_NewImage(image_buffer,EPD_W,EPD_H,0,0);//init image buffer to write for gui api
     lv_port_disp_init();
     ESP_ERROR_CHECK(lv_port_tick_init());
     lv_demo_button();
