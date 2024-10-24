@@ -7,6 +7,7 @@
 #include "EPD_GUI.h"
 #include "lvgl_gui.h"
 #include "Pic.h"
+#include "lvgl.h"
 static const char *TAG = "MAIN INIT";
 
 void app_main()
@@ -34,17 +35,24 @@ void app_main()
     EPD_Init();
     lvgl_gui_init();
 	// /************************全刷************************/
-// 	EPD_Display(gImage_1);
-// 	EPD_Update();
-// 	EPD_DeepSleep();
-// 	delay_ms(1000);
+	// EPD_Display(gImage_1);
+	// EPD_Update();
+	// EPD_DeepSleep();
+	// delay_ms(1000);
 //   /*********************快刷模式**********************/
-	EPD_FastInit();
-	EPD_Display(gImage_2);
-	EPD_FastUpdate();
-	EPD_DeepSleep();
-	delay_ms(1000);
+	// EPD_FastInit();
+	// EPD_Display(gImage_2);
+	// EPD_FastUpdate();
+	// EPD_DeepSleep();
+	// delay_ms(1000);
 
     // qmi8658c_init();
     // es8311_user_init();
+
+    while (1) {
+        // raise the task priority of LVGL and/or reduce the handler period can improve the performance
+        vTaskDelay(pdMS_TO_TICKS(10));
+        // The task running lv_timer_handler should have lower priority than that running `lv_tick_inc`
+        lv_timer_handler();
+    }
 }

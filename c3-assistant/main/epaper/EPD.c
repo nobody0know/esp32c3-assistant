@@ -1,8 +1,7 @@
 #include "EPD.h"
 #include "driver/spi_master.h"
 #include "esp_log.h"
-#include <string.h>
-
+#include "string.h"
 static const char *TAG = "EPD";
 
 static spi_device_handle_t spi;
@@ -11,7 +10,7 @@ void EPD_SPIInit(void)
 {
 	esp_err_t ret;
 	spi_bus_config_t buscfg = {
-		.miso_io_num = -1,			 // MISO信号线
+		.miso_io_num = -1, // MISO信号线
 		.mosi_io_num = PIN_NUM_MOSI, // MOSI信号线
 		.sclk_io_num = PIN_NUM_CLK,	 // SCLK信号线
 		.quadwp_io_num = -1,		 // WP信号线，专用于QSPI的D2
@@ -20,26 +19,25 @@ void EPD_SPIInit(void)
 
 	};
 	// Initialize the SPI bus
-	ret = spi_bus_initialize(SPI2_HOST, &buscfg, SPI_DMA_CH_AUTO);
+	ret = spi_bus_initialize(SPI2_HOST, &buscfg, 0);
 	ESP_ERROR_CHECK(ret);
 
-	spi_device_interface_config_t devcfg = {
-		.clock_speed_hz = 10 * 1000 * 1000, // 10 MHz，墨水屏通常使用较低的 SPI 时钟频率
+    spi_device_interface_config_t devcfg = {
+        .clock_speed_hz = 10 * 1000 * 1000, // 10 MHz，墨水屏通常使用较低的 SPI 时钟频率
 		.mode = 0,							// SPI 模式 0
 		.spics_io_num = PIN_NUM_CS,			// CS 引脚
 		.flags = SPI_DEVICE_3WIRE,
 		.command_bits = 1,
-		.address_bits = 0,
 		.dummy_bits = 0,
 		.queue_size = 8,
-	};
+    };
 	// Attach the epaper to the SPI bus
 	ret = spi_bus_add_device(SPI2_HOST, &devcfg, &spi);
 	// 复位墨水屏
-	gpio_set_level(PIN_NUM_RST, 0);
-	vTaskDelay(200 / portTICK_PERIOD_MS);
-	gpio_set_level(PIN_NUM_RST, 1);
-	vTaskDelay(200 / portTICK_PERIOD_MS);
+    gpio_set_level(PIN_NUM_RST, 0);
+    vTaskDelay(200 / portTICK_PERIOD_MS);
+    gpio_set_level(PIN_NUM_RST, 1);
+    vTaskDelay(200 / portTICK_PERIOD_MS);
 	ESP_ERROR_CHECK(ret);
 
 	ESP_LOGI(TAG, "E-Ink display initialized.");
@@ -54,10 +52,10 @@ void eink_send_command(spi_device_handle_t spi, uint8_t command)
 	t.base.cmd = 0x0;// D/C bit = 0 is write command register
 	t.base.length = 8;
 	t.base.flags = SPI_TRANS_USE_TXDATA | SPI_TRANS_VARIABLE_CMD;
-	t.base.tx_buffer = &command; // 数据
+	t.base.tx_data[0] = command; // 数据
 
-	esp_err_t ret = spi_device_transmit(spi, &t);
-	ESP_ERROR_CHECK(ret);
+    esp_err_t ret = spi_device_transmit(spi, &t);
+    ESP_ERROR_CHECK(ret);
 }
 
 void eink_send_data(spi_device_handle_t spi, uint8_t data)
@@ -69,19 +67,19 @@ void eink_send_data(spi_device_handle_t spi, uint8_t data)
 	t.base.cmd = 0x1;// D/C bit = 1 is write command register
 	t.base.length = 8;
 	t.base.flags = SPI_TRANS_USE_TXDATA | SPI_TRANS_VARIABLE_CMD;
-	t.base.tx_buffer = &data; // 数据
+	t.base.tx_data[0] = data; // 数据
 
-	esp_err_t ret = spi_device_transmit(spi, &t);
-	ESP_ERROR_CHECK(ret);
+    esp_err_t ret = spi_device_transmit(spi, &t);
+    ESP_ERROR_CHECK(ret);
 }
 
 void EPD_WR_REG(uint8_t reg)
 {
-	eink_send_command(spi, reg);
+	eink_send_command(spi,reg);
 }
 void EPD_WR_DATA8(uint8_t data)
 {
-	eink_send_data(spi, data);
+	eink_send_data(spi,data);
 }
 
 /*******************************************************************
@@ -91,7 +89,7 @@ void EPD_WR_DATA8(uint8_t data)
 *******************************************************************/
 void EPD_READBUSY(void)
 {
-	delay_ms(100); // 无需判忙，直接强行延时，墨水屏显示在此产品上不需要实时性
+	delay_ms(100);//无需判忙，直接强行延时，墨水屏显示在此产品上不需要实时性
 	// while (1)
 	// {
 	// 	#define PIN_NUM_BUSY  2   // 忙碌信号引脚
