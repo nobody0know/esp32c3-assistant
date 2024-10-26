@@ -1,0 +1,5 @@
+#define WIFI_CONNECTED_BIT          BIT0
+#define WIFI_GET_SNTP_BIT           BIT1
+#define WIFI_GET_DAILYWEATHER_BIT   BIT2
+#define WIFI_GET_RTWEATHER_BIT      BIT3
+#define WIFI_GET_WEATHER_BIT        BIT4

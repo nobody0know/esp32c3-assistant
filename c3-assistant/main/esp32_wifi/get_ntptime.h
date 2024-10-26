@@ -1,0 +1,1 @@
+extern void ntp_time_init();

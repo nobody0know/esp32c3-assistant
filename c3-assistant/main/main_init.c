@@ -2,13 +2,21 @@
 #include "gpio_func.h"
 #include "qmi8658c.h"
 #include "esp_log.h"
-#include "esp32_wifi.h"
+
 #include "EPD.h"
 #include "EPD_GUI.h"
-#include "lvgl_gui.h"
+#include "lvgl_hw.h"
 #include "Pic.h"
 #include "lvgl.h"
+#include "lvgl_gui.h"
+#include "esp32_wifi.h"
+#include "esp32_wifi/get_ntptime.h"
+#include "esp32_wifi/get_weather.h"
+
 static const char *TAG = "MAIN INIT";
+
+uint8_t reset_flag;
+EventGroupHandle_t my_event_group;
 
 void app_main()
 {
@@ -22,18 +30,22 @@ void app_main()
         ESP_LOGI(TAG, "gpio init success");
     }
 
-    // if (wifi_sta_init() != ESP_OK)
-    // {
-    //     ESP_LOGE(TAG, "gpio init failed");
-    //     abort();
-    // }
-    // else
-    // {
-    //     ESP_LOGI(TAG, "gpio init success");
-    // }
+    if (wifi_sta_init() != ESP_OK)
+    {
+        ESP_LOGE(TAG, "wifi init failed");
+        abort();
+    }
+    else
+    {
+        ESP_LOGI(TAG, "wifi init success");
+    }
+
+    ntp_time_init();
+    weather_init();
 
     EPD_Init();
     lvgl_gui_init();
+    allgui_init();
 	// /************************全刷************************/
 	// EPD_Display(gImage_1);
 	// EPD_Update();
@@ -48,11 +60,4 @@ void app_main()
 
     // qmi8658c_init();
     // es8311_user_init();
-
-    while (1) {
-        // raise the task priority of LVGL and/or reduce the handler period can improve the performance
-        vTaskDelay(pdMS_TO_TICKS(10));
-        // The task running lv_timer_handler should have lower priority than that running `lv_tick_inc`
-        lv_timer_handler();
-    }
 }

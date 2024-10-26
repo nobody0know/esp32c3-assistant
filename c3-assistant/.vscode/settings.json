@@ -11,7 +11,17 @@
         "lvgl.h": "c",
         "lvgl_gui.h": "c",
         "esp_log.h": "c",
-        "gui_guider.h": "c"
+        "gui_guider.h": "c",
+        "lv_example_libs.h": "c",
+        "esp32_wifi.h": "c",
+        "common.h": "c",
+        "esp_netif.h": "c",
+        "esp_http_client.h": "c",
+        "zlib.h": "c",
+        "pic.h": "c",
+        "lvgl_hw.h": "c",
+        "cjson.h": "c",
+        "get_ntptime.h": "c"
     },
     "idf.espIdfPathWin": "C:\\Users\\lc201\\esp\\v5.3\\esp-idf",
     "idf.pythonBinPathWin": "C:\\Users\\lc201\\.espressif\\python_env\\idf5.3_py3.11_env\\Scripts\\python.exe",

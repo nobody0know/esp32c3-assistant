@@ -14,6 +14,9 @@
 
 #include "esp32_wifi.h"
 #include "udp_com/udp_server.h"
+#include "common.h"
+
+extern EventGroupHandle_t my_event_group;
 
 
 #define DEFAULT_WIFI_SSID "602"
@@ -52,7 +55,7 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
         {
         case IP_EVENT_STA_GOT_IP: // 只有获取到路由器分配的IP，才认为是连上了路由器
             ESP_LOGI(TAG, "get ip address");
-            UDP_Init();
+            xEventGroupSetBits(my_event_group, WIFI_CONNECTED_BIT);
             break;
         }
     }
@@ -60,6 +63,7 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
 // WIFI STA初始化
 esp_err_t wifi_sta_init(void)
 {
+    my_event_group = xEventGroupCreate();
     // Initialize NVS
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
