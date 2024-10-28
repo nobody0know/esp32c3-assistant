@@ -21,7 +21,13 @@
         "pic.h": "c",
         "lvgl_hw.h": "c",
         "cjson.h": "c",
-        "get_ntptime.h": "c"
+        "get_ntptime.h": "c",
+        "string.h": "c",
+        "custom.h": "c",
+        "widgets_init.h": "c",
+        "events_init.h": "c",
+        "spi_master.h": "c",
+        "guider_customer_fonts.h": "c"
     },
     "idf.espIdfPathWin": "C:\\Users\\lc201\\esp\\v5.3\\esp-idf",
     "idf.pythonBinPathWin": "C:\\Users\\lc201\\.espressif\\python_env\\idf5.3_py3.11_env\\Scripts\\python.exe",

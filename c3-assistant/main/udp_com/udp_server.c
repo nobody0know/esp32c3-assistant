@@ -52,7 +52,6 @@ int udp_data_prepare(uint8_t *databuffer)
 
 static void udp_client_task(void *pvParameters)
 {
-    char host_ip[] = HOST_IP_ADDR;
     int addr_family = 0;
     int ip_protocol = 0;
 

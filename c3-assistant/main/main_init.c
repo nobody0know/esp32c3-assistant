@@ -15,7 +15,7 @@
 
 static const char *TAG = "MAIN INIT";
 
-uint8_t reset_flag;
+uint8_t reset_flag = 1;
 EventGroupHandle_t my_event_group;
 
 void app_main()
@@ -30,33 +30,15 @@ void app_main()
         ESP_LOGI(TAG, "gpio init success");
     }
 
-    if (wifi_sta_init() != ESP_OK)
-    {
-        ESP_LOGE(TAG, "wifi init failed");
-        abort();
-    }
-    else
-    {
-        ESP_LOGI(TAG, "wifi init success");
-    }
+    EPD_SPIInit();
+    
+    lvgl_gui_init();
+    allgui_init();
+
+    wifi_sta_init();
 
     ntp_time_init();
     weather_init();
-
-    EPD_Init();
-    lvgl_gui_init();
-    allgui_init();
-	// /************************全刷************************/
-	// EPD_Display(gImage_1);
-	// EPD_Update();
-	// EPD_DeepSleep();
-	// delay_ms(1000);
-//   /*********************快刷模式**********************/
-	// EPD_FastInit();
-	// EPD_Display(gImage_2);
-	// EPD_FastUpdate();
-	// EPD_DeepSleep();
-	// delay_ms(1000);
 
     // qmi8658c_init();
     // es8311_user_init();

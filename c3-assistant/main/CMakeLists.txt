@@ -10,8 +10,10 @@ file(GLOB_RECURSE srcs *.c
                     epaper/EPD.c
                     lvgl_gui/*.c
                     lvgl_gui/font/*.c
-                    # lvgl_gui/generated/*.c
-                    # lvgl_gui/custom/*.c
+                    lvgl_gui/generated/*.c
+                    lvgl_gui/generated/guider_fonts/*.c
+                    lvgl_gui/custom/*.c
+                    lvgl_gui/generated/guider_customer_fonts/*.c
                     )
 
 
@@ -24,10 +26,10 @@ udp_com
 epaper 
 lvgl_gui 
 lvgl_gui/font/
-# lvgl_gui/custom
-# lvgl_gui/generated/guider_fonts
-# lvgl_gui/generated/guider_customer_fonts
-# lvgl_gui/custom
+lvgl_gui/custom
+lvgl_gui/generated/guider_fonts
+lvgl_gui/generated/guider_customer_fonts
+lvgl_gui/generated/
 )
 
 

@@ -13,6 +13,8 @@
 
 static const char *TAG = "LVGL_HWINIT";
 
+static uint8_t image_buffer[EPD_W*EPD_H];
+
 static void lv_tick_inc_cb(void *data)
 {
     uint32_t tick_inc_period_ms = *((uint32_t *)data);
@@ -57,15 +59,16 @@ static void disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_
         }
     }
 
+    // ESP_LOGI(TAG, "lvgl draw a image");
+
+    // EPD_FastInit();
     // EPD_Display(Paint.Image);
-    // EPD_Update();
-    //  ESP_LOGI(TAG, "lvgl draw a image");
-    // EPD_DeepSleep();
-    // delay_ms(1000);
-    EPD_FastInit();
+    // EPD_FastUpdate();
+
     EPD_Display(Paint.Image);
-    EPD_FastUpdate();
-    delay_ms(200);
+    EPD_PartUpdate();
+	delay_ms(500);
+    // EPD_DeepSleep();
 
     /*IMPORTANT!!!
      *Inform the graphics library that you are ready with the flushing*/
@@ -82,9 +85,9 @@ static void lv_port_disp_init(void)
     lv_init();
 
     /* 必须从内部RAM分配显存，这样刷新速度快 */
-    lv_color_t *p_disp_buf1 = malloc(EPD_H * disp_buf_height * sizeof(lv_color_t));
+    lv_color_t *p_disp_buf1 = heap_caps_malloc(EPD_H * disp_buf_height * sizeof(lv_color_t), MALLOC_CAP_DMA);
     assert(p_disp_buf1);
-    lv_color_t *p_disp_buf2 = malloc(EPD_H * disp_buf_height * sizeof(lv_color_t));
+    lv_color_t *p_disp_buf2 = heap_caps_malloc(EPD_H * disp_buf_height * sizeof(lv_color_t), MALLOC_CAP_DMA);
     assert(p_disp_buf2);
     ESP_LOGI(TAG, "Try allocate two %u * %u display buffer, size:%u Byte", EPD_H, disp_buf_height, EPD_H * disp_buf_height * sizeof(lv_color_t) * 2);
     if (NULL == p_disp_buf1 || NULL == p_disp_buf2)
@@ -103,7 +106,16 @@ static void lv_port_disp_init(void)
     /*设置显示缓存*/
     disp_drv.draw_buf = &draw_buf_dsc;
     /*注册显示驱动*/
-    lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
+    lv_disp_drv_register(&disp_drv);
+}
+
+void lv_epaper_clean()
+{
+    EPD_Init();
+	EPD_Display_Clear();
+	EPD_Update();						//更新画面显示
+    Paint_Clear(WHITE);  		//清除画布缓存
+    // EPD_Clear_R26H();
 }
 
 void lvgl_base_task()
@@ -122,9 +134,14 @@ void lvgl_base_task()
 void lvgl_gui_init()
 {
     extern EventGroupHandle_t my_event_group;
-    xEventGroupWaitBits(my_event_group, WIFI_GET_WEATHER_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
-    static int8_t image_buffer[EPD_W][EPD_H];
-    Paint_NewImage(image_buffer, EPD_W, EPD_H, 0, 0); // in
+    my_event_group = xEventGroupCreate();
 
-    xTaskCreate(lvgl_base_task, "lvgl_base_task", 4096, NULL, 2, NULL);
+    EPD_Init();
+    Paint_NewImage(image_buffer, EPD_W, EPD_H, 0, WHITE); // in
+    Paint_Clear(WHITE);
+    EPD_Display_Clear();
+    EPD_Update();						//更新画面显示
+    EPD_Clear_R26H();
+
+    xTaskCreate(lvgl_base_task, "lvgl_base_task", 4096, NULL, 5, NULL);
 }

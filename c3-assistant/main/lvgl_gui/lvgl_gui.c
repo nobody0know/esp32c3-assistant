@@ -14,6 +14,14 @@
 #include "esp32_wifi/common.h"
 #include "get_weather.h"
 #include "get_ntptime.h"
+#include "lvgl_hw.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
+#include "lvgl_gui/generated/gui_guider.h"
+#include "lvgl_gui/custom/custom.h"
+#include "generated/events_init.h"
+#include "guider_customer_fonts.h"
 
 static const char * TAG ="LVGL_GUI";
 
@@ -24,8 +32,8 @@ LV_FONT_DECLARE(font_myawesome);
 
 
 lv_obj_t * label_wifi;
-extern lv_obj_t * label_sntp;
-extern lv_obj_t * label_weather;
+lv_obj_t * label_sntp;
+lv_obj_t * label_weather;
 
 lv_obj_t * qweather_icon_label;
 lv_obj_t * qweather_temp_label;
@@ -40,6 +48,8 @@ lv_obj_t *indoor_humi_label;
 lv_obj_t *outdoor_temp_label;
 lv_obj_t *outdoor_humi_label;
 lv_obj_t * date_label;
+
+lv_ui guider_ui;//all ui ________________________________
 
 extern EventGroupHandle_t my_event_group;
 extern time_t now;
@@ -71,24 +81,81 @@ void lv_gui_start(void)
     label_wifi = lv_label_create(lv_scr_act());
     lv_label_set_text(label_wifi, "正在连接WiFi");
     lv_obj_set_style_text_font(label_wifi, &font_alipuhui, 0);
-    lv_obj_set_style_text_color(lv_scr_act(), lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-    lv_obj_set_pos(label_wifi, 85 ,80);
+    lv_obj_set_pos(label_wifi, 85 ,30);
 
     // 获取网络时间
     label_sntp = lv_label_create(lv_scr_act());
     lv_label_set_text(label_sntp, "");
     lv_obj_set_style_text_font(label_sntp, &font_alipuhui, 0);
-    lv_obj_set_style_text_color(lv_scr_act(), lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-    lv_obj_set_pos(label_sntp, 70 ,90);
+    lv_obj_set_pos(label_sntp, 70 ,70);
 
     // 获取天气信息
     label_weather = lv_label_create(lv_scr_act());
     lv_label_set_text(label_weather, "");
     lv_obj_set_style_text_font(label_weather, &font_alipuhui, 0);
-    lv_obj_set_style_text_color(lv_scr_act(), lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-    lv_obj_set_pos(label_weather, 70 ,100);
+    lv_obj_set_pos(label_weather, 70 ,110);
 }
-
+uint16_t icon[80] = {100
+,101
+,102
+,103
+,104
+,150
+,151
+,152
+,153
+,300
+,301
+,302
+,303
+,304
+,305
+,306
+,307
+,308
+,309
+,310
+,311
+,312
+,313
+,314
+,315
+,316
+,317
+,318
+,350
+,351
+,399
+,400
+,401
+,402
+,403
+,404
+,405
+,406
+,407
+,408
+,409
+,410
+,456
+,457
+,499
+,500
+,501
+,502
+,503
+,504
+,507
+,508
+,509
+,510
+,511
+,512
+,513
+,514
+,515
+,900
+,901};
 // 显示天气图标
 void lv_qweather_icon_show(void)
 {
@@ -107,7 +174,7 @@ void lv_qweather_icon_show(void)
         case 301: lv_label_set_text(qweather_icon_label, "\xEF\x84\x8B"); strcpy(qwnow_text, "强阵雨"); break;
         case 302: lv_label_set_text(qweather_icon_label, "\xEF\x84\x8C"); strcpy(qwnow_text, "雷阵雨"); break;
         case 303: lv_label_set_text(qweather_icon_label, "\xEF\x84\x8D"); strcpy(qwnow_text, "强雷阵雨"); break;
-        case 304: lv_label_set_text(qweather_icon_label, "\xEF\x84\x8E"); strcpy(qwnow_text, "雷阵雨伴有冰雹"); break;
+        case 304: lv_label_set_text(qweather_icon_label, "\xEF\x84\x8E"); strcpy(qwnow_text, "雷雨冰雹"); break;
         case 305: lv_label_set_text(qweather_icon_label, "\xEF\x84\x8F"); strcpy(qwnow_text, "小雨"); break;
         case 306: lv_label_set_text(qweather_icon_label, "\xEF\x84\x90"); strcpy(qwnow_text, "中雨"); break;
         case 307: lv_label_set_text(qweather_icon_label, "\xEF\x84\x91"); strcpy(qwnow_text, "大雨"); break;
@@ -121,7 +188,7 @@ void lv_qweather_icon_show(void)
         case 315: lv_label_set_text(qweather_icon_label, "\xEF\x84\x99"); strcpy(qwnow_text, "中到大雨"); break;
         case 316: lv_label_set_text(qweather_icon_label, "\xEF\x84\x9A"); strcpy(qwnow_text, "大到暴雨"); break;
         case 317: lv_label_set_text(qweather_icon_label, "\xEF\x84\x9B"); strcpy(qwnow_text, "暴雨到大暴雨"); break;
-        case 318: lv_label_set_text(qweather_icon_label, "\xEF\x84\x9C"); strcpy(qwnow_text, "大暴雨到特大暴雨"); break;
+        case 318: lv_label_set_text(qweather_icon_label, "\xEF\x84\x9C"); strcpy(qwnow_text, "大到特大暴雨"); break;
         case 350: lv_label_set_text(qweather_icon_label, "\xEF\x84\x9D"); strcpy(qwnow_text, "阵雨"); break;
         case 351: lv_label_set_text(qweather_icon_label, "\xEF\x84\x9E"); strcpy(qwnow_text, "强阵雨"); break;
         case 399: lv_label_set_text(qweather_icon_label, "\xEF\x84\x9F"); strcpy(qwnow_text, "雨"); break;
@@ -169,176 +236,44 @@ void lv_week_show(void)
 {
     switch (timeinfo.tm_wday)
     {
-        case 0: lv_label_set_text(week_label, "星期日"); break;
-        case 1: lv_label_set_text(week_label, "星期一"); break;
-        case 2: lv_label_set_text(week_label, "星期二"); break;
-        case 3: lv_label_set_text(week_label, "星期三"); break;
-        case 4: lv_label_set_text(week_label, "星期四"); break; 
-        case 5: lv_label_set_text(week_label, "星期五"); break;
-        case 6: lv_label_set_text(week_label, "星期六"); break;
-        default: lv_label_set_text(week_label, "星期日"); break;
-    }
-}
-
-// 显示空气质量
-void lv_qair_level_show(void)
-{
-    switch (qanow_level)
-    {
-        case 1: 
-            lv_label_set_text(qair_level_label, "优"); 
-            lv_obj_set_style_bg_color(qair_level_obj, lv_palette_main(LV_PALETTE_GREEN), 0); 
-            lv_obj_set_style_text_color(qair_level_label, lv_color_hex(0xFFFFFF), 0);
-            break;
-        case 2: 
-            lv_label_set_text(qair_level_label, "良"); 
-            lv_obj_set_style_bg_color(qair_level_obj, lv_palette_main(LV_PALETTE_YELLOW), 0); 
-            lv_obj_set_style_text_color(qair_level_label, lv_color_hex(0x000000), 0);
-            break;
-        case 3: 
-            lv_label_set_text(qair_level_label, "轻");
-            lv_obj_set_style_bg_color(qair_level_obj, lv_palette_main(LV_PALETTE_ORANGE), 0); 
-            lv_obj_set_style_text_color(qair_level_label, lv_color_hex(0xFFFFFF), 0); 
-            break;
-        case 4: 
-            lv_label_set_text(qair_level_label, "中"); 
-            lv_obj_set_style_bg_color(qair_level_obj, lv_palette_main(LV_PALETTE_RED), 0); 
-            lv_obj_set_style_text_color(qair_level_label, lv_color_hex(0xFFFFFF), 0);
-            break; 
-        case 5: 
-            lv_label_set_text(qair_level_label, "重"); 
-            lv_obj_set_style_bg_color(qair_level_obj, lv_palette_main(LV_PALETTE_PURPLE), 0); 
-            lv_obj_set_style_text_color(qair_level_label, lv_color_hex(0xFFFFFF), 0);
-            break;
-        case 6: 
-            lv_label_set_text(qair_level_label, "严"); 
-            lv_obj_set_style_bg_color(qair_level_obj, lv_palette_main(LV_PALETTE_BROWN), 0); 
-            lv_obj_set_style_text_color(qair_level_label, lv_color_hex(0xFFFFFF), 0);
-            break;
-        default: 
-            lv_label_set_text(qair_level_label, "未"); 
-            lv_obj_set_style_bg_color(qair_level_obj, lv_palette_main(LV_PALETTE_GREEN), 0); 
-            lv_obj_set_style_text_color(qair_level_label, lv_color_hex(0xFFFFFF), 0);
-            break;
+        case 0: lv_label_set_text(guider_ui.screen_label_5, "星期日"); break;
+        case 1: lv_label_set_text(guider_ui.screen_label_5, "星期一"); break;
+        case 2: lv_label_set_text(guider_ui.screen_label_5, "星期二"); break;
+        case 3: lv_label_set_text(guider_ui.screen_label_5, "星期三"); break;
+        case 4: lv_label_set_text(guider_ui.screen_label_5, "星期四"); break; 
+        case 5: lv_label_set_text(guider_ui.screen_label_5, "星期五"); break;
+        case 6: lv_label_set_text(guider_ui.screen_label_5, "星期六"); break;
+        default: lv_label_set_text(guider_ui.screen_label_5, "星期日"); break;
     }
 }
 
 // 主界面
 void lv_main_page(void)
 {
-    static lv_style_t style;
-    lv_style_init(&style);
+    /*Create a GUI-Guider app */
+	setup_ui(&guider_ui);
+    events_init(&guider_ui);
+    custom_init(&guider_ui);
 
-    /*Create an object with the new style*/
-    lv_obj_t * obj = lv_obj_create(lv_scr_act());
-    lv_obj_add_style(obj, &style, 0);
+    time(&now);
+    localtime_r(&now, &timeinfo);
+    ESP_LOGI(TAG,"DATA IS %d/%d/%d",timeinfo.tm_year,timeinfo.tm_mon,timeinfo.tm_mday);
+    lv_label_set_text_fmt(guider_ui.screen_label_6, "%d/%d/%d",timeinfo.tm_year+1900,timeinfo.tm_mon+1,timeinfo.tm_mday);
 
-    // 显示地理位置
-    lv_obj_t * addr_label = lv_label_create(obj);
-    lv_obj_set_style_text_font(addr_label, &font_alipuhui, 0);
-    lv_label_set_text(addr_label, "深圳市|坪山区");
-    lv_obj_align_to(addr_label, obj, LV_ALIGN_TOP_LEFT, 0, 0);
-
-    // 显示年月日
-    date_label = lv_label_create(obj);
-    lv_obj_set_style_text_font(date_label, &font_alipuhui, 0);
-    lv_label_set_text_fmt(date_label, "%d年%02d月%02d日", timeinfo.tm_year+1900, timeinfo.tm_mon+1, timeinfo.tm_mday);
-    lv_obj_align_to(date_label, obj, LV_ALIGN_TOP_RIGHT, 0, 0);
-
-    // 显示分割线
-    lv_obj_t * above_bar = lv_bar_create(obj);
-    lv_obj_set_size(above_bar, 300, 3);
-    lv_obj_set_pos(above_bar, 0 , 30);
-    lv_bar_set_value(above_bar, 100, LV_ANIM_OFF);
-
-    // 显示天气图标
-    qweather_icon_label = lv_label_create(obj);
+        // 显示天气图标
+    qweather_icon_label = lv_label_create(guider_ui.screen);
     lv_obj_set_style_text_font(qweather_icon_label, &font_qweather, 0);
-    lv_obj_set_pos(qweather_icon_label, 0 , 40);
+    lv_obj_set_pos(qweather_icon_label, 20 , 30);
     lv_qweather_icon_show();
+    lv_label_set_text_fmt(guider_ui.screen_qweather_text_label, "%s",qwnow_text);
+    lv_obj_set_style_text_font(guider_ui.screen_qweather_text_label, &lv_customer_font_vivo_Sans_20, LV_PART_MAIN|LV_STATE_DEFAULT);
+    ESP_LOGI(TAG,"weather is %s",qwnow_text);
 
-    // 显示空气质量
-    static lv_style_t qair_level_style;
-    lv_style_init(&qair_level_style);
-    lv_style_set_radius(&qair_level_style, 10);  // 设置圆角半径
-    lv_style_set_border_width(&qair_level_style, 0);
-    lv_style_set_pad_all(&qair_level_style, 0);
-    lv_style_set_width(&qair_level_style, 50);  // 设置宽
-    lv_style_set_height(&qair_level_style, 26); // 设置高
-
-    qair_level_obj = lv_obj_create(obj);
-    lv_obj_add_style(qair_level_obj, &qair_level_style, 0);
-    lv_obj_align_to(qair_level_obj, qweather_icon_label, LV_ALIGN_OUT_RIGHT_TOP, 5, 0);
-
-    qair_level_label = lv_label_create(qair_level_obj);
-    lv_obj_set_style_text_font(qair_level_label, &font_alipuhui, 0);
-    lv_obj_align(qair_level_label, LV_ALIGN_CENTER, 0, 0);
-    lv_qair_level_show();
-
-    // 显示当天室外温度范围
-    qweather_temp_label = lv_label_create(obj);
-    lv_obj_set_style_text_font(qweather_temp_label, &font_alipuhui, 0);
-    lv_label_set_text_fmt(qweather_temp_label, "%d~%d℃", qwdaily_tempMin, qwdaily_tempMax);
-    lv_obj_align_to(qweather_temp_label, qweather_icon_label, LV_ALIGN_OUT_RIGHT_MID, 5, 5);
-
-    // 显示当天天气图标代表的天气状况
-    qweather_text_label = lv_label_create(obj);
-    lv_obj_set_style_text_font(qweather_text_label, &font_alipuhui, 0);
-    lv_label_set_long_mode(qweather_text_label, LV_LABEL_LONG_SCROLL_CIRCULAR);     /*Circular scroll*/
-    lv_obj_set_width(qweather_text_label, 80);
-    lv_label_set_text_fmt(qweather_text_label, "%s", qwnow_text);
-    lv_obj_align_to(qweather_text_label, qweather_icon_label, LV_ALIGN_OUT_RIGHT_BOTTOM, 5, 0);
-    
-    // 显示时间  小时:分钟:秒钟
-    led_time_label = lv_label_create(obj);
-    lv_obj_set_style_text_font(led_time_label, &font_led, 0);
-    lv_label_set_text_fmt(led_time_label, "%02d:%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
-    lv_obj_set_pos(led_time_label, 142, 42);
-
-    // 显示星期几
-    week_label = lv_label_create(obj);
-    lv_obj_set_style_text_font(week_label, &font_alipuhui, 0);
-    lv_obj_align_to(week_label, led_time_label, LV_ALIGN_OUT_BOTTOM_RIGHT, -10, 6);
     lv_week_show();
 
+    lv_label_set_text_fmt(guider_ui.screen_qweather_temp_label, "室外：%d℃\n室内：%d℃",qwnow_temp,25);
 
-    // 显示室外温湿度
-    static lv_style_t outdoor_style;
-    lv_style_init(&outdoor_style);
-    lv_style_set_radius(&outdoor_style, 10);  // 设置圆角半径
-    lv_style_set_border_width(&outdoor_style, 0);
-    lv_style_set_pad_all(&outdoor_style, 5);
-    lv_style_set_width(&outdoor_style, 100);  // 设置宽
-    lv_style_set_height(&outdoor_style, 80); // 设置高
 
-    lv_obj_t * outdoor_obj = lv_obj_create(obj);
-    lv_obj_add_style(outdoor_obj, &outdoor_style, 0);
-    lv_obj_align(outdoor_obj, LV_ALIGN_BOTTOM_LEFT, 0, 0);
-
-    lv_obj_t *outdoor_th_label = lv_label_create(outdoor_obj);
-    lv_obj_set_style_text_font(outdoor_th_label, &font_alipuhui, 0);
-    lv_label_set_text(outdoor_th_label, "室外");
-    lv_obj_align(outdoor_th_label, LV_ALIGN_TOP_MID, 0, 0);
-
-    lv_obj_t *temp_symbol_label1 = lv_label_create(outdoor_obj);
-    lv_obj_set_style_text_font(temp_symbol_label1, &font_myawesome, 0);
-    lv_label_set_text(temp_symbol_label1, "\xEF\x8B\x88");  // 显示温度图标
-    lv_obj_align(temp_symbol_label1, LV_ALIGN_LEFT_MID, 10, 0);
-
-    outdoor_temp_label = lv_label_create(outdoor_obj);
-    lv_obj_set_style_text_font(outdoor_temp_label, &font_alipuhui, 0);
-    lv_label_set_text_fmt(outdoor_temp_label, "%d℃", qwnow_temp);
-    lv_obj_align_to(outdoor_temp_label, temp_symbol_label1, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
-
-    lv_obj_t *humi_symbol_label1 = lv_label_create(outdoor_obj);
-    lv_obj_set_style_text_font(humi_symbol_label1, &font_myawesome, 0);
-    lv_label_set_text(humi_symbol_label1, "\xEF\x81\x83");  // 显示湿度图标
-    lv_obj_align(humi_symbol_label1, LV_ALIGN_BOTTOM_LEFT, 10, 0);
-
-    outdoor_humi_label = lv_label_create(outdoor_obj);
-    lv_obj_set_style_text_font(outdoor_humi_label, &font_alipuhui, 0);
-    lv_label_set_text_fmt(outdoor_humi_label, "%d%%", qwnow_humi);
-    lv_obj_align_to(outdoor_humi_label, humi_symbol_label1, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
 
 }
 
@@ -352,37 +287,22 @@ void value_update_cb(lv_timer_t * timer)
     // 更新日期 星期 时分秒
     time(&now);
     localtime_r(&now, &timeinfo);
-    lv_label_set_text_fmt(led_time_label, "%02d:%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
-    lv_label_set_text_fmt(date_label, "%d年%02d月%02d日", timeinfo.tm_year+1900, timeinfo.tm_mon+1, timeinfo.tm_mday);
+    lv_label_set_text_fmt(guider_ui.screen_label_6, "%d/%d/%d",timeinfo.tm_year+1900,timeinfo.tm_mon+1,timeinfo.tm_mday);
     lv_week_show();
-
-    // 日出日落时间交替显示 每隔5秒切换
-    if (timeinfo.tm_sec%10 == 0) 
-        lv_label_set_text_fmt(sunset_label, "日落 %s", qwdaily_sunset);
-    else if(timeinfo.tm_sec%10 == 5)
-        lv_label_set_text_fmt(sunset_label, "日出 %s", qwdaily_sunrise);
 
     // 更新实时天气
     if(qwnow_update_flag == 1)
     {
+        // static int i=0;
+        // qwnow_icon = icon[i++];
+        // if(i == sizeof(icon)-1) i=0;
+        ESP_LOGI(TAG,"icon change to %d",qwnow_icon);
         qwnow_update_flag = 0;
         lv_qweather_icon_show(); // 更新天气图标
-        lv_label_set_text_fmt(qweather_text_label, "%s", qwnow_text); // 更新天气情况文字描述
-        lv_label_set_text_fmt(outdoor_temp_label, "%d℃", qwnow_temp); // 更新室外温度
-        lv_label_set_text_fmt(outdoor_humi_label, "%d%%", qwnow_humi); // 更新室外湿度
+        lv_label_set_text_fmt(guider_ui.screen_qweather_text_label, "%s",qwnow_text);
+        lv_label_set_text_fmt(guider_ui.screen_qweather_temp_label, "室外：%d℃\n室内：%d℃",qwnow_temp,25);
     }
-    // 更新空气质量
-    if(qair_update_flag ==1)
-    {
-        qair_update_flag = 0;
-        lv_qair_level_show();
-    }
-    // 更新每日天气
-    if(qwdaily_update_flag == 1)
-    {
-        qwdaily_update_flag = 0;
-        lv_label_set_text_fmt(qweather_temp_label, "%d~%d℃", qwdaily_tempMin, qwdaily_tempMax); // 温度范围
-    }
+
 }
 
 // 主界面 任务函数
@@ -392,9 +312,12 @@ static void main_page_task(void *pvParameters)
     int tm_cnt2 = 0;
 
     xEventGroupWaitBits(my_event_group, WIFI_GET_WEATHER_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
-    vTaskDelay(pdMS_TO_TICKS(100));
-    lv_obj_clean(lv_scr_act());
-    vTaskDelay(pdMS_TO_TICKS(100));
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    lv_epaper_clean();
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
+    ESP_LOGI(TAG, "clean and draw main page!!!");
+
     lv_main_page();
 
     th_update_flag = 0;
@@ -402,7 +325,7 @@ static void main_page_task(void *pvParameters)
     qair_update_flag = 0;
     qwdaily_update_flag = 0;
 
-    lv_timer_create(value_update_cb, 1000, NULL);  // 创建一个lv_timer 每秒更新一次数据
+    lv_timer_create(value_update_cb, 30*60*1000, NULL);  // 创建一个lv_timer 每秒更新一次数据
 
     reset_flag = 0; // 标记开机完成
 
@@ -431,22 +354,10 @@ static void main_page_task(void *pvParameters)
 
 void allgui_init()
 {
-    xEventGroupWaitBits(my_event_group, WIFI_GET_WEATHER_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
-    static lv_style_t style;
-    lv_style_init(&style);
-        /*Create an object with the new style*/
-    lv_obj_t * obj = lv_obj_create(lv_scr_act());
-    lv_obj_add_style(obj, &style, 0);
 
-    reset_flag = 1; // 标记刚开机
+    lv_gui_start();
 
-    // 显示天气图标
-    qweather_icon_label = lv_label_create(obj);
-    lv_obj_set_style_text_font(qweather_icon_label, &font_qweather, 0);
-    lv_obj_set_pos(qweather_icon_label, 0 , 30);
-    lv_qweather_icon_show();
-
-    // xTaskCreate(main_page_task, "main_page_task", 4096, NULL, 5, NULL);         // 非一次性任务 主界面任务
+    xTaskCreate(main_page_task, "main_page_task", 4096, NULL, 5, NULL);         // 非一次性任务 主界面任务
 
 }
 

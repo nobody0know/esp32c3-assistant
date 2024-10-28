@@ -28,6 +28,7 @@ void EPD_PartUpdate(void);
 void EPD_FastUpdate(void);
 void EPD_DeepSleep(void);
 void EPD_Init(void);
+void EPD_SPIInit(void);
 void EPD_FastInit(void);
 void EPD_Display_Clear(void);
 void EPD_Clear_R26H(void);

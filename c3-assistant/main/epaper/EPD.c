@@ -2,7 +2,11 @@
 #include "driver/spi_master.h"
 #include "esp_log.h"
 #include "string.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 static const char *TAG = "EPD";
+
+void EPD_Display_Clear(void);
 
 static spi_device_handle_t spi;
 
@@ -45,6 +49,7 @@ void EPD_SPIInit(void)
 
 void eink_send_command(spi_device_handle_t spi, uint8_t command)
 {
+	taskENTER_CRITICAL(1);        //进入基本临界区
 	spi_transaction_ext_t t;
 	memset(&t, 0, sizeof(t));
 	// transmit D/C bit: [0] + data: [8 bits command]
@@ -54,12 +59,14 @@ void eink_send_command(spi_device_handle_t spi, uint8_t command)
 	t.base.flags = SPI_TRANS_USE_TXDATA | SPI_TRANS_VARIABLE_CMD;
 	t.base.tx_data[0] = command; // 数据
 
-    esp_err_t ret = spi_device_transmit(spi, &t);
+    esp_err_t ret = spi_device_polling_transmit(spi, &t.base);
     ESP_ERROR_CHECK(ret);
+	taskEXIT_CRITICAL(1);        //退出基本临界区
 }
 
 void eink_send_data(spi_device_handle_t spi, uint8_t data)
 {
+	taskENTER_CRITICAL(1);        //进入基本临界区
 	spi_transaction_ext_t t;
 	memset(&t, 0, sizeof(t));
 	// transmit D/C bit: [0] + data: [8 bits command]
@@ -69,8 +76,9 @@ void eink_send_data(spi_device_handle_t spi, uint8_t data)
 	t.base.flags = SPI_TRANS_USE_TXDATA | SPI_TRANS_VARIABLE_CMD;
 	t.base.tx_data[0] = data; // 数据
 
-    esp_err_t ret = spi_device_transmit(spi, &t);
+    esp_err_t ret = spi_device_polling_transmit(spi, &t.base);
     ESP_ERROR_CHECK(ret);
+	taskEXIT_CRITICAL(1);        //退出基本临界区
 }
 
 void EPD_WR_REG(uint8_t reg)
@@ -172,7 +180,6 @@ void EPD_DeepSleep(void)
 *******************************************************************/
 void EPD_Init(void)
 {
-	EPD_SPIInit();
 	EPD_HW_RESET();
 	EPD_READBUSY();
 	EPD_WR_REG(0x12); // SWRESET
@@ -207,6 +214,8 @@ void EPD_Init(void)
 	EPD_WR_DATA8(0x00);
 	EPD_WR_DATA8(0x00);
 	EPD_READBUSY();
+
+	EPD_Display_Clear();
 }
 
 /*******************************************************************
