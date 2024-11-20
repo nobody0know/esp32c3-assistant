@@ -36,20 +36,10 @@ lv_obj_t * label_sntp;
 lv_obj_t * label_weather;
 
 lv_obj_t * qweather_icon_label;
-lv_obj_t * qweather_temp_label;
-lv_obj_t * qweather_text_label;
-lv_obj_t * qair_level_obj;
-lv_obj_t * qair_level_label;
-lv_obj_t * led_time_label;
-lv_obj_t * week_label;
-lv_obj_t * sunset_label;
-lv_obj_t *indoor_temp_label;
-lv_obj_t *indoor_humi_label;
-lv_obj_t *outdoor_temp_label;
-lv_obj_t *outdoor_humi_label;
-lv_obj_t * date_label;
+SemaphoreHandle_t lv_mutex;  // 互斥锁句柄
 
-lv_ui guider_ui;//all ui ________________________________
+lv_ui guider_ui;//guiguider ui ------------------------
+
 
 extern EventGroupHandle_t my_event_group;
 extern time_t now;
@@ -95,67 +85,7 @@ void lv_gui_start(void)
     lv_obj_set_style_text_font(label_weather, &font_alipuhui, 0);
     lv_obj_set_pos(label_weather, 70 ,110);
 }
-uint16_t icon[80] = {100
-,101
-,102
-,103
-,104
-,150
-,151
-,152
-,153
-,300
-,301
-,302
-,303
-,304
-,305
-,306
-,307
-,308
-,309
-,310
-,311
-,312
-,313
-,314
-,315
-,316
-,317
-,318
-,350
-,351
-,399
-,400
-,401
-,402
-,403
-,404
-,405
-,406
-,407
-,408
-,409
-,410
-,456
-,457
-,499
-,500
-,501
-,502
-,503
-,504
-,507
-,508
-,509
-,510
-,511
-,512
-,513
-,514
-,515
-,900
-,901};
+uint16_t icon[80] = {100, 101, 102, 103, 104, 150, 151, 152, 153, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 350, 351, 399, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 456, 457, 499, 500, 501, 502, 503, 504, 507, 508, 509, 510, 511, 512, 513, 514, 515, 900, 901};
 // 显示天气图标
 void lv_qweather_icon_show(void)
 {
@@ -257,7 +187,6 @@ void lv_main_page(void)
 
     time(&now);
     localtime_r(&now, &timeinfo);
-    ESP_LOGI(TAG,"DATA IS %d/%d/%d",timeinfo.tm_year,timeinfo.tm_mon,timeinfo.tm_mday);
     // lv_label_set_text_fmt(guider_ui.screen_label_6, "%d/%d/%d",timeinfo.tm_year+1900,timeinfo.tm_mon+1,timeinfo.tm_mday);
     lv_label_set_text_fmt(guider_ui.screen_label_6, "%d/%d %d:%02d",timeinfo.tm_mon+1,timeinfo.tm_mday,timeinfo.tm_hour,timeinfo.tm_min);
 
@@ -282,10 +211,7 @@ void lv_main_page(void)
 // 主界面各值更新函数
 void value_update_cb(lv_timer_t * timer)
 {
-    extern int th_update_flag;
     extern int qwnow_update_flag;
-    extern int qair_update_flag;
-    extern int qwdaily_update_flag;
     // 更新日期 星期 时分秒
     time(&now);
     localtime_r(&now, &timeinfo);
@@ -296,9 +222,12 @@ void value_update_cb(lv_timer_t * timer)
     // 更新实时天气
     if(qwnow_update_flag == 1)
     {
+        //-------test code start
         // static int i=0;
         // qwnow_icon = icon[i++];
         // if(i == sizeof(icon)-1) i=0;
+        //-------test code end
+
         ESP_LOGI(TAG,"icon change to %d",qwnow_icon);
         qwnow_update_flag = 0;
         lv_qweather_icon_show(); // 更新天气图标
@@ -313,11 +242,11 @@ static void main_page_task(void *pvParameters)
 {
     int tm_cnt1 = 0;
     int tm_cnt2 = 0;
+    lv_mutex = xSemaphoreCreateMutex();//add mutex
 
     xEventGroupWaitBits(my_event_group, WIFI_GET_RTWEATHER_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
-    vTaskDelay(pdMS_TO_TICKS(500));
-    lv_epaper_clean();
     vTaskDelay(pdMS_TO_TICKS(2000));
+    lv_epaper_clean();
 
     ESP_LOGI(TAG, "clean and draw main page!!!");
 
@@ -335,16 +264,10 @@ static void main_page_task(void *pvParameters)
     while (1)
     {
         tm_cnt1++;
-        if (tm_cnt1 > 60) // 30分钟更新一次实时天气和实时空气质量
+        if (tm_cnt1 > 60*10) // 10分钟更新一次实时天气和实时空气质量
         {
             tm_cnt1 = 0; // 计数清零
-            tm_cnt2++;
-            if (tm_cnt2 > 30) // 60分钟更新一次每日天气
-            {
-                tm_cnt2 = 0;
-                get_now_weather();  // 获取实时天气信息
-                // get_daily_weather(); // 获取每日天气信息
-            }
+            get_now_weather();  // 获取实时天气信息
             printf("weather update time:%02d:%02d:%02d\n", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
         }
         

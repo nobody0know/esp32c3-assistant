@@ -455,6 +455,6 @@ void get_airq_task(void *pvParameters)
 void weather_init()
 {
     // xTaskCreate(get_dwather_task, "get_dwather_task", 8192, NULL, 5, NULL);     // 一次性任务   获取每日天气信息
-    xTaskCreate(get_rtweather_task, "get_rtweather_task", 12288, NULL, 5, NULL); // 一次性任务   获取实时天气信息
+    xTaskCreate(get_rtweather_task, "get_rtweather_task", 8192, NULL, 5, NULL); // 一次性任务   获取实时天气信息
     // xTaskCreate(get_airq_task, "get_airq_task", 8192, NULL, 5, NULL);           // 一次性任务   获取实时空气质量
 }
