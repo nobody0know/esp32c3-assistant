@@ -360,7 +360,7 @@ void get_now_weather(void)
 void get_rtweather_task(void *pvParameters)
 {
 
-    xEventGroupWaitBits(my_event_group, WIFI_GET_DAILYWEATHER_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
+    xEventGroupWaitBits(my_event_group, WIFI_GET_SNTP_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
     // vTaskDelay(pdMS_TO_TICKS(100));
     get_now_weather();
     if (qwnow_update_flag == 1) // 获取实时天气信息成功
@@ -454,7 +454,7 @@ void get_airq_task(void *pvParameters)
 
 void weather_init()
 {
-    xTaskCreate(get_dwather_task, "get_dwather_task", 8192, NULL, 5, NULL);     // 一次性任务   获取每日天气信息
+    // xTaskCreate(get_dwather_task, "get_dwather_task", 8192, NULL, 5, NULL);     // 一次性任务   获取每日天气信息
     xTaskCreate(get_rtweather_task, "get_rtweather_task", 8192, NULL, 5, NULL); // 一次性任务   获取实时天气信息
-    xTaskCreate(get_airq_task, "get_airq_task", 8192, NULL, 5, NULL);           // 一次性任务   获取实时空气质量
+    // xTaskCreate(get_airq_task, "get_airq_task", 8192, NULL, 5, NULL);           // 一次性任务   获取实时空气质量
 }

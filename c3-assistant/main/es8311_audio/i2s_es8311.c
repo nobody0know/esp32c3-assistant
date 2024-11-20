@@ -115,7 +115,7 @@ static void i2s_music(void *args)
     ESP_ERROR_CHECK(i2s_channel_enable(tx_handle));
     while (1)
     {
-        if ((xQueueReceive(gpio_evt_queue, &io_num, 100)==pdTRUE)||(xQueueReceive(imu_evt_queue, &atti_flag, 100)==pdTRUE))
+        if ((xQueueReceive(gpio_evt_queue, &io_num, 100)==pdTRUE))//||(xQueueReceive(imu_evt_queue, &atti_flag, 100)==pdTRUE))
         {
             /* Write music to earphone */
             ret = i2s_channel_write(tx_handle, data_ptr, music_pcm_end - data_ptr, &bytes_write, portMAX_DELAY);
@@ -137,11 +137,11 @@ static void i2s_music(void *args)
                 abort();
             }
             data_ptr = (uint8_t *)music_pcm_start;
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            vTaskDelay(3000 / portTICK_PERIOD_MS);
         }
         else
         {
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            vTaskDelay(3000 / portTICK_PERIOD_MS);
         }
     }
     vTaskDelete(NULL);

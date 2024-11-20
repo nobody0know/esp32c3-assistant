@@ -4,6 +4,7 @@ file(GLOB_RECURSE srcs *.c
                     gpio_func/gpio_func.c 
                     ./main_init.c 
                     qmi8658c_imu/qmi8658c.c 
+                    LSM6DSO_imu/*.c
                     esp32_wifi/*.c 
                     udp_com/udp_server.c 
                     epaper/EPD_GUI.c 
@@ -21,6 +22,7 @@ set(include_dirs
 . es8311_audio 
 gpio_func 
 qmi8658c_imu 
+LSM6DSO_imu
 esp32_wifi 
 udp_com 
 epaper 
@@ -35,5 +37,5 @@ lvgl_gui/generated/
 
 idf_component_register(SRCS ${srcs} 
                     INCLUDE_DIRS ${include_dirs} 
-                    PRIV_REQUIRES esp_driver_i2s esp_driver_gpio esp_event esp_netif esp_wifi nvs_flash esp_timer esp_http_client json esp-tls mbedtls)
-                    # EMBED_FILES ../../mp3_to_pcm/a.pcm)
+                    PRIV_REQUIRES esp_driver_i2s esp_driver_gpio esp_event esp_netif esp_wifi nvs_flash esp_timer esp_http_client json esp-tls mbedtls
+EMBED_FILES ../../mp3_to_pcm/a.pcm)

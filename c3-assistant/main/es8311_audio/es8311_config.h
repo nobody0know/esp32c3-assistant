@@ -33,12 +33,12 @@
 #else
 #define I2S_MCK_IO      (GPIO_NUM_10)
 #define I2S_BCK_IO      (GPIO_NUM_8)
-#define I2S_WS_IO       (GPIO_NUM_12)
+#define I2S_WS_IO       (GPIO_NUM_19)
 #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
 #define I2S_DO_IO       (GPIO_NUM_18)
 #define I2S_DI_IO       (GPIO_NUM_19)
 #else
-#define I2S_DO_IO       (GPIO_NUM_11)
+#define I2S_DO_IO       (GPIO_NUM_18)
 #define I2S_DI_IO       (GPIO_NUM_7)
 #endif
 #endif

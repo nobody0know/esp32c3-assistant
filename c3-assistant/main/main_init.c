@@ -1,6 +1,6 @@
 #include "i2s_es8311.h"
 #include "gpio_func.h"
-#include "qmi8658c.h"
+#include "lsm6dso.h"
 #include "esp_log.h"
 
 #include "EPD.h"
@@ -40,6 +40,7 @@ void app_main()
     ntp_time_init();
     weather_init();
 
-    // qmi8658c_init();
+    // lsm6dso_init();
+
     // es8311_user_init();
 }

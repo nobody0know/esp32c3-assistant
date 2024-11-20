@@ -46,13 +46,13 @@ esp_err_t gpio_init()
     gpio_config_t io_conf = {
         .intr_type = GPIO_INTR_DISABLE, // disable interrupt
         .mode = GPIO_MODE_OUTPUT,       // set as output mode
-        .pin_bit_mask = 1 << GPIO_NUM_13,        // bit mask of the pins
+        .pin_bit_mask = 1 << GPIO_NUM_2,        // bit mask of the pins
         .pull_down_en = 0,              // disable pull-down mode
         .pull_up_en = 1,                // enable pull-up mode
     };
     // configure GPIO with the given settings
     gpio_config(&io_conf);
-    gpio_set_level(GPIO_NUM_13, 1); // out put high level
+    gpio_set_level(GPIO_NUM_2, 1); // out put high level
 
     vTaskDelay(pdMS_TO_TICKS(500));
 
@@ -98,7 +98,7 @@ esp_err_t gpio_init()
         .mode = I2C_MODE_MASTER,
         .sda_pullup_en = GPIO_PULLUP_ENABLE,
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = 100000,
+        .master.clk_speed = 50000,
     };
     ESP_RETURN_ON_ERROR(i2c_param_config(I2C_NUM, &es_i2c_cfg), TAG, "config i2c failed");
     ESP_RETURN_ON_ERROR(i2c_driver_install(I2C_NUM, I2C_MODE_MASTER, 0, 0, 0), TAG, "install i2c driver failed");

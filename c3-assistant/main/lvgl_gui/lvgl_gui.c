@@ -258,7 +258,9 @@ void lv_main_page(void)
     time(&now);
     localtime_r(&now, &timeinfo);
     ESP_LOGI(TAG,"DATA IS %d/%d/%d",timeinfo.tm_year,timeinfo.tm_mon,timeinfo.tm_mday);
-    lv_label_set_text_fmt(guider_ui.screen_label_6, "%d/%d/%d",timeinfo.tm_year+1900,timeinfo.tm_mon+1,timeinfo.tm_mday);
+    // lv_label_set_text_fmt(guider_ui.screen_label_6, "%d/%d/%d",timeinfo.tm_year+1900,timeinfo.tm_mon+1,timeinfo.tm_mday);
+    lv_label_set_text_fmt(guider_ui.screen_label_6, "%d/%d %d:%02d",timeinfo.tm_mon+1,timeinfo.tm_mday,timeinfo.tm_hour,timeinfo.tm_min);
+
 
         // 显示天气图标
     qweather_icon_label = lv_label_create(guider_ui.screen);
@@ -287,7 +289,8 @@ void value_update_cb(lv_timer_t * timer)
     // 更新日期 星期 时分秒
     time(&now);
     localtime_r(&now, &timeinfo);
-    lv_label_set_text_fmt(guider_ui.screen_label_6, "%d/%d/%d",timeinfo.tm_year+1900,timeinfo.tm_mon+1,timeinfo.tm_mday);
+    // lv_label_set_text_fmt(guider_ui.screen_label_6, "%d/%d/%d",timeinfo.tm_year+1900,timeinfo.tm_mon+1,timeinfo.tm_mday);
+    lv_label_set_text_fmt(guider_ui.screen_label_6, "%d/%d %d:%02d",timeinfo.tm_mon+1,timeinfo.tm_mday,timeinfo.tm_hour,timeinfo.tm_min);
     lv_week_show();
 
     // 更新实时天气
@@ -311,10 +314,10 @@ static void main_page_task(void *pvParameters)
     int tm_cnt1 = 0;
     int tm_cnt2 = 0;
 
-    xEventGroupWaitBits(my_event_group, WIFI_GET_WEATHER_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    xEventGroupWaitBits(my_event_group, WIFI_GET_RTWEATHER_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
+    vTaskDelay(pdMS_TO_TICKS(500));
     lv_epaper_clean();
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(2000));
 
     ESP_LOGI(TAG, "clean and draw main page!!!");
 
@@ -325,23 +328,22 @@ static void main_page_task(void *pvParameters)
     qair_update_flag = 0;
     qwdaily_update_flag = 0;
 
-    lv_timer_create(value_update_cb, 30*60*1000, NULL);  // 创建一个lv_timer 每秒更新一次数据
+    lv_timer_create(value_update_cb, 1*60*1000, NULL);  // 创建一个lv_timer 每秒更新一次数据
 
     reset_flag = 0; // 标记开机完成
 
     while (1)
     {
         tm_cnt1++;
-        if (tm_cnt1 > 1800) // 30分钟更新一次实时天气和实时空气质量
+        if (tm_cnt1 > 60) // 30分钟更新一次实时天气和实时空气质量
         {
             tm_cnt1 = 0; // 计数清零
-            get_now_weather();  // 获取实时天气信息
-            get_air_quality();  // 获取实时空气质量
             tm_cnt2++;
-            if (tm_cnt2 > 1) // 60分钟更新一次每日天气
+            if (tm_cnt2 > 30) // 60分钟更新一次每日天气
             {
                 tm_cnt2 = 0;
-                get_daily_weather(); // 获取每日天气信息
+                get_now_weather();  // 获取实时天气信息
+                // get_daily_weather(); // 获取每日天气信息
             }
             printf("weather update time:%02d:%02d:%02d\n", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
         }
@@ -357,7 +359,7 @@ void allgui_init()
 
     lv_gui_start();
 
-    xTaskCreate(main_page_task, "main_page_task", 4096, NULL, 5, NULL);         // 非一次性任务 主界面任务
+    xTaskCreate(main_page_task, "main_page_task", 8192, NULL, 5, NULL);         // 非一次性任务 主界面任务
 
 }
 
