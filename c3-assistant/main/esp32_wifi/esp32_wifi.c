@@ -22,8 +22,8 @@ extern lv_obj_t *label_wifi;
 extern lv_obj_t *label_sntp;
 extern uint8_t reset_flag;
 
-#define DEFAULT_WIFI_SSID "602"
-#define DEFAULT_WIFI_PASSWORD "38188477"
+#define DEFAULT_WIFI_SSID "Xiaomi_120"
+#define DEFAULT_WIFI_PASSWORD "12345678"
 static const char *TAG = "WIFI";
 /** 事件回调函数
  * @param arg   用户传递的参数

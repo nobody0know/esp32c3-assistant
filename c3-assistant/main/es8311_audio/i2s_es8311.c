@@ -15,6 +15,7 @@
 #include "es8311.h"
 #include "es8311_config.h"
 #include "gpio_func.h"
+#include "common.h"
 // #include "esp_efuse_table.h"
 
 extern QueueHandle_t gpio_evt_queue;
@@ -46,7 +47,7 @@ static esp_err_t es8311_codec_init(void)
 
     ESP_ERROR_CHECK(es8311_init(es_handle, &es_clk, ES8311_RESOLUTION_16, ES8311_RESOLUTION_16));
     ESP_RETURN_ON_ERROR(es8311_sample_frequency_config(es_handle, ES8311_SAMPLE_RATE * ES8311_MCLK_MULTIPLE, ES8311_SAMPLE_RATE), TAG, "set es8311 sample frequency failed");
-    ESP_RETURN_ON_ERROR(es8311_voice_volume_set(es_handle, ES8311_VOICE_VOLUME, NULL), TAG, "set es8311 volume failed");
+    ESP_RETURN_ON_ERROR(es8311_voice_volume_set(es_handle, 70, NULL), TAG, "set es8311 volume failed");
     ESP_RETURN_ON_ERROR(es8311_microphone_config(es_handle, false), TAG, "set es8311 microphone failed");
 #if CONFIG_ES8311_MODE_ECHO
     ESP_RETURN_ON_ERROR(es8311_microphone_gain_set(es_handle, ES8311_MIC_GAIN), TAG, "set es8311 microphone gain failed");
@@ -115,7 +116,7 @@ static void i2s_music(void *args)
     ESP_ERROR_CHECK(i2s_channel_enable(tx_handle));
     while (1)
     {
-        if ((xQueueReceive(gpio_evt_queue, &io_num, 100)==pdTRUE))//||(xQueueReceive(imu_evt_queue, &atti_flag, 100)==pdTRUE))
+        if ((xQueueReceive(gpio_evt_queue, &io_num, 10)==pdTRUE))//||(xQueueReceive(imu_evt_queue, &atti_flag, 100)==pdTRUE))
         {
             /* Write music to earphone */
             ret = i2s_channel_write(tx_handle, data_ptr, music_pcm_end - data_ptr, &bytes_write, portMAX_DELAY);
@@ -189,7 +190,8 @@ static void i2s_echo(void *args)
 
 void es8311_user_init(void)
 {
-
+    extern EventGroupHandle_t my_event_group;
+    xEventGroupWaitBits(my_event_group, WIFI_GET_RTWEATHER_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
     printf("i2s es8311 codec ES8311 start\n-----------------------------\n");
     /* Initialize i2s peripheral */
     if (i2s_driver_init() != ESP_OK)

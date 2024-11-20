@@ -82,7 +82,7 @@ esp_err_t gpio_init()
     gpio_config(&io_conf);//复位
 
     // create a queue to handle gpio event from isr
-    gpio_evt_queue = xQueueCreate(10, sizeof(uint32_t));
+    gpio_evt_queue = xQueueCreate(1, sizeof(uint32_t));
     // start gpio task
     // xTaskCreate(gpio_task, "gpio_task_example", 2048, NULL, 10, NULL);
 
@@ -98,7 +98,7 @@ esp_err_t gpio_init()
         .mode = I2C_MODE_MASTER,
         .sda_pullup_en = GPIO_PULLUP_ENABLE,
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = 50000,
+        .master.clk_speed = 100000,
     };
     ESP_RETURN_ON_ERROR(i2c_param_config(I2C_NUM, &es_i2c_cfg), TAG, "config i2c failed");
     ESP_RETURN_ON_ERROR(i2c_driver_install(I2C_NUM, I2C_MODE_MASTER, 0, 0, 0), TAG, "install i2c driver failed");
