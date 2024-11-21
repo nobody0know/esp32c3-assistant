@@ -212,6 +212,7 @@ void lv_main_page(void)
 void value_update_cb(lv_timer_t * timer)
 {
     extern int qwnow_update_flag;
+    extern uint8_t wifi_disconnect_flag;
     // 更新日期 星期 时分秒
     time(&now);
     localtime_r(&now, &timeinfo);
@@ -235,13 +236,22 @@ void value_update_cb(lv_timer_t * timer)
         lv_label_set_text_fmt(guider_ui.screen_qweather_temp_label, "室外：%d℃\n室内：%d℃",qwnow_temp,25);
     }
 
+    if (wifi_disconnect_flag == 1)
+    {
+        lv_label_set_text(guider_ui.screen_label_7, "" LV_SYMBOL_WIFI "!");
+    }
+    else
+    {
+        lv_label_set_text(guider_ui.screen_label_7, "" LV_SYMBOL_WIFI "");
+    }
+    
+
 }
 
 // 主界面 任务函数
 static void main_page_task(void *pvParameters)
 {
     int tm_cnt1 = 0;
-    int tm_cnt2 = 0;
     lv_mutex = xSemaphoreCreateMutex();//add mutex
 
     xEventGroupWaitBits(my_event_group, WIFI_GET_RTWEATHER_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
@@ -259,7 +269,7 @@ static void main_page_task(void *pvParameters)
 
     lv_timer_create(value_update_cb, 1*60*1000, NULL);  // 创建一个lv_timer 每秒更新一次数据
 
-    reset_flag = 0; // 标记开机完成
+    reset_flag = 1; // 标记开机完成
 
     while (1)
     {

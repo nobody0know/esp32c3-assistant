@@ -365,7 +365,7 @@ void get_rtweather_task(void *pvParameters)
     get_now_weather();
     if (qwnow_update_flag == 1) // 获取实时天气信息成功
     {
-        if (reset_flag == 1) // 如果是刚开机
+        if (reset_flag == 0) // 如果是刚开机
         {
             lv_label_set_text(label_weather, "√ 天气信息获取成功");
         }

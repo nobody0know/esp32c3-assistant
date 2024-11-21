@@ -56,7 +56,7 @@ ESP_LOGI(TAG,"DATA IS %d/%d/%d",timeinfo.tm_year,timeinfo.tm_mon,timeinfo.tm_mda
     strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
     ESP_LOGI(TAG, "The current date/time in Shanghai is: %s", strftime_buf);
 
-    if (reset_flag == 1) // 如果是刚开机
+    if (reset_flag == 0) // 如果是刚开机
     {
         lv_label_set_text(label_sntp, "√ 网络时间获取成功");
         lv_label_set_text(label_weather, "正在获取天气信息");

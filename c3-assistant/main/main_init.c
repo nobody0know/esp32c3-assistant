@@ -15,7 +15,7 @@
 
 static const char *TAG = "MAIN INIT";
 
-uint8_t reset_flag = 1;
+uint8_t reset_flag = 0;
 EventGroupHandle_t my_event_group;
 
 void app_main()
@@ -42,5 +42,5 @@ void app_main()
 
     lsm6dso_init();
 
-    es8311_user_init();
+    // es8311_user_init();
 }
