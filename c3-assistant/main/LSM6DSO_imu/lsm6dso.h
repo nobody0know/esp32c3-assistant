@@ -59,6 +59,9 @@ enum LSM6DSO_Registers {
     LSM6DSO_REG_CTRL13_C = 0x1C,           // 控制寄存器13
     LSM6DSO_REG_CTRL14_C = 0x1D,           // 控制寄存器14
 
+    LSM6DSO_REG_TEMP_L = 0x20,
+    LSM6DSO_REG_TEMP_H = 0x21,
+
     // 备用寄存器
     LSM6DSO_REG_RESERVED = 0xFF            // 备用寄存器（仅示例）
 };

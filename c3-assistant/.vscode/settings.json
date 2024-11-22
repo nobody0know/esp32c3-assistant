@@ -27,7 +27,12 @@
         "widgets_init.h": "c",
         "events_init.h": "c",
         "spi_master.h": "c",
-        "guider_customer_fonts.h": "c"
+        "guider_customer_fonts.h": "c",
+        "lsm6dso.h": "c",
+        "freertos.h": "c",
+        "i2c.h": "c",
+        "get_weather.h": "c",
+        "regex": "c"
     },
     "idf.espIdfPathWin": "C:\\Users\\lc201\\esp\\v5.3\\esp-idf",
     "idf.pythonBinPathWin": "C:\\Users\\lc201\\.espressif\\python_env\\idf5.3_py3.11_env\\Scripts\\python.exe",
@@ -40,6 +45,6 @@
     },
     "idf.gitPathWin": "C:\\Users\\lc201\\.espressif\\tools\\idf-git\\2.39.2\\cmd\\git.exe",
     "idf.flashType": "UART",
-    "idf.portWin": "COM8",
+    "idf.portWin": "COM10",
     
 }
