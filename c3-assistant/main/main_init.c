@@ -12,6 +12,7 @@
 #include "esp32_wifi.h"
 #include "esp32_wifi/get_ntptime.h"
 #include "esp32_wifi/get_weather.h"
+#include "pca9557/pca9557_driver.h"
 
 static const char *TAG = "MAIN INIT";
 
@@ -30,17 +31,18 @@ void app_main()
         ESP_LOGI(TAG, "gpio init success");
     }
 
-    EPD_SPIInit();
+    // EPD_SPIInit();
     
-    lvgl_gui_init();
-    allgui_init();
+    // lvgl_gui_init();
+    // allgui_init();
 
-    wifi_sta_init();
+    // wifi_sta_init();
 
-    ntp_time_init();
-    weather_init();
+    // ntp_time_init();
+    // weather_init();
 
-    lsm6dso_init();
+    pca9557_init();
+    // lsm6dso_init();
 
-    // es8311_user_init();
+    es8311_user_init();
 }

@@ -191,7 +191,7 @@ static void i2s_echo(void *args)
 void es8311_user_init(void)
 {
     extern EventGroupHandle_t my_event_group;
-    xEventGroupWaitBits(my_event_group, WIFI_GET_RTWEATHER_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
+    // xEventGroupWaitBits(my_event_group, WIFI_GET_RTWEATHER_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
     printf("i2s es8311 codec ES8311 start\n-----------------------------\n");
     /* Initialize i2s peripheral */
     if (i2s_driver_init() != ESP_OK)

@@ -50,7 +50,7 @@ esp_err_t gpio_init()
         .pull_down_en = 0,              // disable pull-down mode
         .pull_up_en = 1,                // enable pull-up mode
     };
-    // configure GPIO with the given settings
+    // // configure GPIO with the given settings
     gpio_config(&io_conf);
     gpio_set_level(GPIO_NUM_2, 1); // out put high level
 
