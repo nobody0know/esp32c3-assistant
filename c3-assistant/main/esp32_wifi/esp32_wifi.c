@@ -32,7 +32,6 @@ EventGroupHandle_t s_wifi_event_group;
 static nvs_handle wifi_config_nvs_h;
 static uint16_t wifi_retry_count = 0;
 
-
 static void smartconfig_task(void *parm);
 
 static void event_handler(void *arg, esp_event_base_t event_base,
@@ -219,11 +218,14 @@ void wifi_connect_task()
     bzero(&wifi_config, sizeof(wifi_config_t));
     memcpy(wifi_config.sta.ssid, wifi_ssid, sizeof(wifi_config.sta.ssid));
     memcpy(wifi_config.sta.password, wifi_password, sizeof(wifi_config.sta.password));
+    wifi_config.sta.listen_interval = 10;
 
     // 启动WIFI
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));               // 设置工作模式为STA
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config)); // 设置wifi配置
     ESP_ERROR_CHECK(esp_wifi_start());                               // 启动WIFI
+    ESP_ERROR_CHECK(esp_wifi_set_inactive_time(WIFI_IF_STA, 6));
+    esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
 
     if (wifi_config_flag == 0)
     {

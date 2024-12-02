@@ -224,6 +224,10 @@ es8311_handle_t es8311_create(const i2c_port_t port, const uint16_t dev_addr);
  */
 void es8311_delete(es8311_handle_t dev);
 
+esp_err_t es8311_power_down(es8311_handle_t dev);
+
+esp_err_t es8311_power_on(es8311_handle_t dev);
+
 #ifdef __cplusplus
 }
 #endif

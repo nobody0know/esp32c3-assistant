@@ -448,7 +448,7 @@ static void main_page_task(void *pvParameters)
     lv_mutex = xSemaphoreCreateMutex(); // add mutex
 
     xEventGroupWaitBits(my_event_group, WIFI_GET_RTWEATHER_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
-    vTaskDelay(pdMS_TO_TICKS(2000));
+    vTaskDelay(pdMS_TO_TICKS(3000));
     lv_epaper_clean();
 
     ESP_LOGI(TAG, "clean and draw main page!!!");
@@ -460,21 +460,15 @@ static void main_page_task(void *pvParameters)
     qair_update_flag = 0;
     qwdaily_update_flag = 0;
 
-    lv_timer_create(value_update_cb, 1 * 60 * 1000, NULL); // 创建一个lv_timer 每秒更新一次数据
+    lv_timer_create(value_update_cb, 1 * 60 * 1000, NULL); // 创建一个lv_timer 每分钟更新一次数据
 
     reset_flag = 1; // 标记开机完成
 
     while (1)
     {
-        tm_cnt1++;
-        if (tm_cnt1 > 60 * 10) // 10分钟更新一次实时天气和实时空气质量
-        {
-            tm_cnt1 = 0;       // 计数清零
-            get_now_weather(); // 获取实时天气信息
-            printf("weather update time:%02d:%02d:%02d\n", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
-        }
-
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        get_now_weather(); // 获取实时天气信息
+        printf("weather update time:%02d:%02d:%02d\n", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+        vTaskDelay(pdMS_TO_TICKS(30 * 60 * 1000));
     }
 
     vTaskDelete(NULL);

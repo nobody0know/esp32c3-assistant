@@ -33,7 +33,10 @@
         "i2c.h": "c",
         "get_weather.h": "c",
         "regex": "c",
-        "cstdint": "c"
+        "cstdint": "c",
+        "pca9557_driver.h": "c",
+        "esp_pm.h": "c",
+        "gpio_func.h": "c"
     },
     "idf.espIdfPathWin": "C:\\Users\\lc201\\esp\\v5.3\\esp-idf",
     "idf.pythonBinPathWin": "C:\\Users\\lc201\\.espressif\\python_env\\idf5.3_py3.11_env\\Scripts\\python.exe",

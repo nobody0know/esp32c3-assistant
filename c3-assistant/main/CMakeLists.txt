@@ -7,6 +7,7 @@ file(GLOB_RECURSE srcs *.c
                     LSM6DSO_imu/*.c
                     PCA9557/*.c
                     GXHTC3/*.c
+                    sleep_wakeup/*.c
                     esp32_wifi/*.c 
                     udp_com/udp_server.c 
                     epaper/EPD_GUI.c 
@@ -28,6 +29,7 @@ LSM6DSO_imu
 PCA9557
 GXHTC3
 esp32_wifi 
+sleep_wakeup
 udp_com 
 epaper 
 lvgl_gui 

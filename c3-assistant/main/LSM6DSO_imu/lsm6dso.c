@@ -185,7 +185,7 @@ void imu_task(void *pvParameter)
         extern QueueHandle_t gpio_evt_queue;
 
         // if(door_state != last_door_state)
-            printf("door state is %d\n", door_state);
+            // printf("door state is %d\n", door_state);
         // last_door_state = door_state;
         uint32_t io_num;
         static uint16_t isr_times = 0;
@@ -196,7 +196,7 @@ void imu_task(void *pvParameter)
         // }
         // 读取环境温度
         // ESP_LOGI(TAG, "Reading temperature...");
-        // esp_err_t ret = lsm6dso_read_temperature(&temperature);
+        esp_err_t ret = lsm6dso_read_temperature(&temperature);
 
         // if (ret == ESP_OK)
         // {
@@ -207,6 +207,6 @@ void imu_task(void *pvParameter)
         //     ESP_LOGE(TAG, "Failed to read temperature. Error: %s", esp_err_to_name(ret));
         // }
         // lsm6dso_check_active_state();
-        vTaskDelay(100 / portTICK_PERIOD_MS);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }

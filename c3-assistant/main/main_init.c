@@ -13,11 +13,23 @@
 #include "esp32_wifi/get_ntptime.h"
 #include "esp32_wifi/get_weather.h"
 #include "pca9557/pca9557_driver.h"
+#include "esp_pm.h"
+#include "esp_sleep.h"
 
 static const char *TAG = "MAIN INIT";
 
 uint8_t reset_flag = 0;
 EventGroupHandle_t my_event_group;
+
+void sleep_init()
+{
+    esp_sleep_enable_gpio_wakeup();
+    esp_pm_config_t pm_config = {
+        .max_freq_mhz = 80,
+        .min_freq_mhz = 10,
+        .light_sleep_enable = true};
+    ESP_ERROR_CHECK(esp_pm_configure(&pm_config));
+}
 
 void app_main()
 {
@@ -31,18 +43,21 @@ void app_main()
         ESP_LOGI(TAG, "gpio init success");
     }
 
-    // EPD_SPIInit();
-    
-    // lvgl_gui_init();
-    // allgui_init();
+    EPD_SPIInit();
 
-    // wifi_sta_init();
+    lvgl_gui_init();
+    allgui_init();
 
-    // ntp_time_init();
-    // weather_init();
+    wifi_sta_init();
+
+    ntp_time_init();
+    weather_init();
 
     // pca9557_init();
     lsm6dso_init();
 
-    es8311_user_init();
+    // es8311_user_init();
+
+    sleep_init();
+    
 }

@@ -27,6 +27,8 @@ static const char err_reason[][30] = {"input param is invalid",
 static i2s_chan_handle_t tx_handle = NULL;
 static i2s_chan_handle_t rx_handle = NULL;
 
+static es8311_handle_t es_handle;
+
 /* Import music file as buffer */
 #if CONFIG_ES8311_MODE_MUSIC
 extern const uint8_t music_pcm_start[] asm("_binary_a_pcm_start");
@@ -36,7 +38,7 @@ extern const uint8_t music_pcm_end[] asm("_binary_a_pcm_end");
 static esp_err_t es8311_codec_init(void)
 {
     /* Initialize es8311 codec */
-    es8311_handle_t es_handle = es8311_create(I2C_NUM, ES8311_ADDRRES_0);
+    es_handle = es8311_create(I2C_NUM, ES8311_ADDRRES_0);
     ESP_RETURN_ON_FALSE(es_handle, ESP_FAIL, TAG, "es8311 create failed");
     const es8311_clock_config_t es_clk = {
         .mclk_inverted = false,
@@ -123,6 +125,7 @@ static void i2s_music(void *args)
             if (door_state == 1) // mean human has enter house
             {
                 vTaskDelay(3000 / portTICK_PERIOD_MS);
+                es8311_power_on(es_handle);
                 /* Write music to earphone */
                 ret = i2s_channel_write(tx_handle, data_ptr, music_pcm_end - data_ptr, &bytes_write, portMAX_DELAY);
                 if (ret != ESP_OK)
@@ -144,6 +147,7 @@ static void i2s_music(void *args)
                 }
                 data_ptr = (uint8_t *)music_pcm_start;
                 vTaskDelay(3000 / portTICK_PERIOD_MS);
+                es8311_power_down(es_handle);
             }
         }
         vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -194,7 +198,7 @@ static void i2s_echo(void *args)
 void es8311_user_init(void)
 {
     extern EventGroupHandle_t my_event_group;
-    // xEventGroupWaitBits(my_event_group, WIFI_GET_RTWEATHER_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
+    xEventGroupWaitBits(my_event_group, WIFI_GET_RTWEATHER_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
     printf("i2s es8311 codec ES8311 start\n-----------------------------\n");
     /* Initialize i2s peripheral */
     if (i2s_driver_init() != ESP_OK)
@@ -216,6 +220,7 @@ void es8311_user_init(void)
     {
         ESP_LOGI(TAG, "es8311 codec init success");
     }
+    es8311_power_down(es_handle);
 #if CONFIG_ES8311_MODE_MUSIC
     /* Play a piece of music in music mode */
     xTaskCreate(i2s_music, "i2s_music", 4096, NULL, 5, NULL);
