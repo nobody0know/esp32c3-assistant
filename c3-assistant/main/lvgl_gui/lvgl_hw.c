@@ -79,7 +79,7 @@ static void lv_port_disp_init(void)
 {
     static lv_disp_draw_buf_t draw_buf_dsc;
     static lv_disp_drv_t disp_drv; /*A variable to hold the drivers. Must be static or global.*/
-    size_t disp_buf_height = 50;
+    size_t disp_buf_height = 30;
 
     ESP_LOGI(TAG, "Initialize LVGL library");
     lv_init();

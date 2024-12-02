@@ -105,6 +105,7 @@ static void i2s_music(void *args)
     uint8_t *data_ptr = (uint8_t *)music_pcm_start;
     uint32_t io_num;
     uint32_t atti_flag;
+    int8_t door_state = -1;
 
     /* (Optional) Disable TX channel and preload the data before enabling the TX channel,
      * so that the valid data can be transmitted immediately */
@@ -116,34 +117,36 @@ static void i2s_music(void *args)
     ESP_ERROR_CHECK(i2s_channel_enable(tx_handle));
     while (1)
     {
-        if ((xQueueReceive(gpio_evt_queue, &io_num, 10)==pdTRUE))//||(xQueueReceive(imu_evt_queue, &atti_flag, 100)==pdTRUE))
+        if ((xQueueReceive(gpio_evt_queue, &io_num, 10) == pdTRUE)) //||(xQueueReceive(imu_evt_queue, &atti_flag, 100)==pdTRUE))
         {
-            /* Write music to earphone */
-            ret = i2s_channel_write(tx_handle, data_ptr, music_pcm_end - data_ptr, &bytes_write, portMAX_DELAY);
-            if (ret != ESP_OK)
+            door_state = -door_state;
+            if (door_state == 1) // mean human has enter house
             {
-                /* Since we set timeout to 'portMAX_DELAY' in 'i2s_channel_write'
-                   so you won't reach here unless you set other timeout value,
-                   if timeout detected, it means write operation failed. */
-                ESP_LOGE(TAG, "[music] i2s write failed, %s", err_reason[ret == ESP_ERR_TIMEOUT]);
-                abort();
+                vTaskDelay(3000 / portTICK_PERIOD_MS);
+                /* Write music to earphone */
+                ret = i2s_channel_write(tx_handle, data_ptr, music_pcm_end - data_ptr, &bytes_write, portMAX_DELAY);
+                if (ret != ESP_OK)
+                {
+                    /* Since we set timeout to 'portMAX_DELAY' in 'i2s_channel_write'
+                       so you won't reach here unless you set other timeout value,
+                       if timeout detected, it means write operation failed. */
+                    ESP_LOGE(TAG, "[music] i2s write failed, %s", err_reason[ret == ESP_ERR_TIMEOUT]);
+                    abort();
+                }
+                if (bytes_write > 0)
+                {
+                    ESP_LOGI(TAG, "[music] i2s music played, %d bytes are written.", bytes_write);
+                }
+                else
+                {
+                    ESP_LOGE(TAG, "[music] i2s music play failed.");
+                    abort();
+                }
+                data_ptr = (uint8_t *)music_pcm_start;
+                vTaskDelay(3000 / portTICK_PERIOD_MS);
             }
-            if (bytes_write > 0)
-            {
-                ESP_LOGI(TAG, "[music] i2s music played, %d bytes are written.", bytes_write);
-            }
-            else
-            {
-                ESP_LOGE(TAG, "[music] i2s music play failed.");
-                abort();
-            }
-            data_ptr = (uint8_t *)music_pcm_start;
-            vTaskDelay(3000 / portTICK_PERIOD_MS);
         }
-        else
-        {
-            vTaskDelay(3000 / portTICK_PERIOD_MS);
-        }
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
     vTaskDelete(NULL);
 }

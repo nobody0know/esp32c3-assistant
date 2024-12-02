@@ -41,31 +41,6 @@ esp_err_t lsm6dso_read_register(uint8_t reg_addr, uint8_t *data, size_t len)
     return ret;
 }
 
-void lsm6dso_init(void)
-{
-    uint8_t id = 0;
-
-    while (id != 0x6c)
-    {
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        // lsm6dso_read_register(LSM6DSO_REG_WHO_AM_I,&id,1);
-        lsm6dso_register_read(LSM6DSO_REG_WHO_AM_I, &id, 1);
-        ESP_LOGI(TAG, "get lsm6dso id is %d", id);
-    }
-    ESP_LOGI(TAG, "LSM6DSO OK!");
-
-    vTaskDelay(10 / portTICK_PERIOD_MS);
-    lsm6dso_register_write_byte(LSM6DSO_REG_INT1_CTRL, 0x01);                 // CTRL1 设置地址自动增加
-    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_CTRL1_XL, 0x60)); // CTRL7 允许加速度和陀螺仪
-    lsm6dso_register_write_byte(LSM6DSO_REG_INT1_CTRL, 0x02);                 // CTRL2 设置ACC 4g 250Hz
-    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_CTRL2_G, 0x60));  // CTRL3 设置GRY 512dps 250Hz
-
-    imu_evt_queue = xQueueCreate(1, sizeof(uint32_t));
-    imu_data_queue = xQueueCreate(10, 12);
-
-    xTaskCreate(imu_task, "imu_task", 2048, NULL, 3, NULL);
-}
-
 // 读取温度数据
 esp_err_t lsm6dso_read_temperature(float *temperature)
 {
@@ -80,34 +55,158 @@ esp_err_t lsm6dso_read_temperature(float *temperature)
     // 合成 16 位温度数据
     raw_temp = (int16_t)((temp_data[1] << 8) | temp_data[0]);
 
-    printf("temp is L:%x H%x",temp_data[0],temp_data[1]);
+    printf("temp is L:%x H%x", temp_data[0], temp_data[1]);
 
     // 转换为摄氏度
     *temperature = raw_temp / 256.0f + 25.0f;
     return ESP_OK;
 }
 
-// 主函数
+esp_err_t lsm6dso_set_tilt_cal(void)
+{
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_FUNC_CFG_ACCESS, 0x80));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_EMB_FUNC_EN_A, 0x10));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_EMB_FUNC_INT2, 0x10));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_PAGE_RW, 0x80));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_FUNC_CFG_ACCESS, 0x00));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_MD2_CFG, 0x02));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_CTRL1_XL, 0x20));
+
+    return ESP_OK;
+}
+
+esp_err_t lsm6dso_check_tilt_state(void)
+{
+    uint8_t tilt_state = 0;
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_FUNC_CFG_ACCESS, 0x80));
+    ESP_ERROR_CHECK(lsm6dso_register_read(LSM6DSO_REG_EMB_FUNC_STATUS, &tilt_state, 1));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_FUNC_CFG_ACCESS, 0x00));
+    if (tilt_state != 0)
+        printf("tilt state is %d\n", tilt_state);
+    return ESP_OK;
+}
+
+esp_err_t lsm6dso_set_significant_motion_det(void)
+{
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_FUNC_CFG_ACCESS, 0x80));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_EMB_FUNC_EN_A, 0x20));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_EMB_FUNC_INT2, 0x20));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_PAGE_RW, 0x80));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_FUNC_CFG_ACCESS, 0x00));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_MD2_CFG, 0x02));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_CTRL1_XL, 0x20));
+
+    return ESP_OK;
+}
+
+esp_err_t lsm6dso_check_motion_state(void)
+{
+    uint8_t motion_state = 0;
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_FUNC_CFG_ACCESS, 0x80));
+    ESP_ERROR_CHECK(lsm6dso_register_read(LSM6DSO_REG_EMB_FUNC_STATUS, &motion_state, 1));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_FUNC_CFG_ACCESS, 0x00));
+    if (motion_state != 0)
+        printf("motion state is %d\n", motion_state);
+    return ESP_OK;
+}
+
+esp_err_t lsm6dso_set_6D_det(void)
+{
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_CTRL1_XL, 0x60));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_TAP_CFG0, 0x41));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_TAP_CFG2, 0x80));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_TAP_THS_6D, 0x40));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_CTRL8_XL, 0x01));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_MD2_CFG, 0x04));
+
+    return ESP_OK;
+}
+
+esp_err_t lsm6dso_check_6D_state(void)
+{
+    uint8_t get_6D_state = 0;
+    ESP_ERROR_CHECK(lsm6dso_register_read(LSM6DSO_REG_D6D_SRC, &get_6D_state, 1));
+    if (get_6D_state != 0x20)
+        printf("6d state is 0x%x\n", get_6D_state);
+    return ESP_OK;
+}
+
+esp_err_t lsm6dso_set_active_det(void)
+{
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_CTRL1_XL, 0x51));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_CTRL2_G, 0x40));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_WAKE_UP_DUR, 0x72));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_WAKE_UP_THS, 0x05));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_TAP_CFG0, 0x30));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_TAP_CFG2, 0xE0));
+    ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_MD2_CFG, 0x80));
+
+    return ESP_OK;
+}
+
+esp_err_t lsm6dso_check_active_state(void)
+{
+    uint8_t get_active_state = 0;
+    ESP_ERROR_CHECK(lsm6dso_register_read(LSM6DSO_REG_WAKE_UP_SRC, &get_active_state, 1));
+    if (get_active_state != 0x0)
+        printf("active state is 0x%x\n", get_active_state);
+    return ESP_OK;
+}
+
+void lsm6dso_init(void)
+{
+    uint8_t id = 0;
+
+    while (id != 0x6c)
+    {
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        lsm6dso_register_read(LSM6DSO_REG_WHO_AM_I, &id, 1);
+        ESP_LOGI(TAG, "get lsm6dso id is %d", id);
+    }
+    ESP_LOGI(TAG, "LSM6DSO OK!");
+
+    vTaskDelay(10 / portTICK_PERIOD_MS);
+
+    lsm6dso_set_active_det();
+
+    // xTaskCreate(imu_task, "imu_task", 2048, NULL, 3, NULL);
+}
+
+// 任务函数,调试用
 void imu_task(void *pvParameter)
 {
     float temperature = 0.0;
     extern EventGroupHandle_t my_event_group;
-    // xEventGroupWaitBits(my_event_group, WIFI_GET_RTWEATHER_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
+    lsm6dso_set_active_det();
+    extern int8_t door_state;
+    int8_t last_door_state = door_state;
     while (1)
     {
-        // 读取环境温度
-        ESP_LOGI(TAG, "Reading temperature...");
-        esp_err_t ret = lsm6dso_read_temperature(&temperature);
+        extern QueueHandle_t gpio_evt_queue;
 
-        if (ret == ESP_OK)
-        {
-            ESP_LOGI(TAG, "Temperature: %.2f °C", temperature);
-        }
-        else
-        {
-            ESP_LOGE(TAG, "Failed to read temperature. Error: %s", esp_err_to_name(ret));
-        }
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        // if(door_state != last_door_state)
+            printf("door state is %d\n", door_state);
+        // last_door_state = door_state;
+        uint32_t io_num;
+        static uint16_t isr_times = 0;
+        // if ((xQueueReceive(gpio_evt_queue, &io_num, 10)==pdTRUE))
+        // {
+        //     isr_times++;
+        //     printf("get gpio isr total:%d\n",isr_times);
+        // }
+        // 读取环境温度
+        // ESP_LOGI(TAG, "Reading temperature...");
+        // esp_err_t ret = lsm6dso_read_temperature(&temperature);
+
+        // if (ret == ESP_OK)
+        // {
+        //     ESP_LOGI(TAG, "Temperature: %.2f °C", temperature);
+        // }
+        // else
+        // {
+        //     ESP_LOGE(TAG, "Failed to read temperature. Error: %s", esp_err_to_name(ret));
+        // }
+        // lsm6dso_check_active_state();
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
-    
 }

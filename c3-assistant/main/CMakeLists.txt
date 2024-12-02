@@ -6,6 +6,7 @@ file(GLOB_RECURSE srcs *.c
                     qmi8658c_imu/qmi8658c.c 
                     LSM6DSO_imu/*.c
                     PCA9557/*.c
+                    GXHTC3/*.c
                     esp32_wifi/*.c 
                     udp_com/udp_server.c 
                     epaper/EPD_GUI.c 
@@ -25,6 +26,7 @@ gpio_func
 qmi8658c_imu 
 LSM6DSO_imu
 PCA9557
+GXHTC3
 esp32_wifi 
 udp_com 
 epaper 

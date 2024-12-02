@@ -60,7 +60,7 @@ void setup_scr_screen(lv_ui *ui)
 
     //Write codes screen_qweather_temp_label
     ui->screen_qweather_temp_label = lv_label_create(ui->screen);
-    lv_label_set_text(ui->screen_qweather_temp_label, "室外：20℃\n室内：25℃");
+    lv_label_set_text(ui->screen_qweather_temp_label, "室外：℃\n室内：℃");
     lv_label_set_long_mode(ui->screen_qweather_temp_label, LV_LABEL_LONG_WRAP);
     lv_obj_set_pos(ui->screen_qweather_temp_label, 128, 71);
     lv_obj_set_size(ui->screen_qweather_temp_label, 76, 33);

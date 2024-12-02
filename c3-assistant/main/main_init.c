@@ -41,8 +41,8 @@ void app_main()
     // ntp_time_init();
     // weather_init();
 
-    pca9557_init();
-    // lsm6dso_init();
+    // pca9557_init();
+    lsm6dso_init();
 
     es8311_user_init();
 }
