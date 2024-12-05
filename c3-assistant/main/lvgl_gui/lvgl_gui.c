@@ -400,12 +400,11 @@ void lv_main_page(void)
     ESP_LOGI(TAG, "weather is %s", qwnow_text);
 
     lv_week_show();
-    // lsm6dso_read_temperature();
-    lv_label_set_text_fmt(guider_ui.screen_qweather_temp_label, "室外：%d℃\n室内：%d℃", qwnow_temp, lsm6dso_read_temperature());
+    lv_label_set_text_fmt(guider_ui.screen_qweather_temp_label, "室外：%d℃\n室内：%02d℃", qwnow_temp, lsm6dso_read_temperature());
 }
 
 // 主界面各值更新函数
-void value_update_cb(lv_timer_t *timer)
+void value_update_cb()
 {
     extern int qwnow_update_flag;
     extern uint8_t wifi_disconnect_flag;
@@ -415,6 +414,10 @@ void value_update_cb(lv_timer_t *timer)
     // lv_label_set_text_fmt(guider_ui.screen_label_6, "%d/%d/%d",timeinfo.tm_year+1900,timeinfo.tm_mon+1,timeinfo.tm_mday);
     lv_label_set_text_fmt(guider_ui.screen_label_6, "%d/%d %d:%02d", timeinfo.tm_mon + 1, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min);
     lv_week_show();
+
+    ESP_LOGI(TAG,"update srceen value");
+    ESP_LOGI(TAG,"update srceen time:%02d:%02d:%02d\n", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+
 
     // 更新实时天气
     if (qwnow_update_flag == 1)
@@ -429,8 +432,7 @@ void value_update_cb(lv_timer_t *timer)
         qwnow_update_flag = 0;
         lv_qweather_icon_show(); // 更新天气图标
         lv_label_set_text_fmt(guider_ui.screen_qweather_text_label, "%s", qwnow_text);
-        // lsm6dso_read_temperature();
-        lv_label_set_text_fmt(guider_ui.screen_qweather_temp_label, "室外：%d℃\n室内：%d℃", qwnow_temp, lsm6dso_read_temperature());
+        lv_label_set_text_fmt(guider_ui.screen_qweather_temp_label, "室外：%d℃\n室内：%02d℃", qwnow_temp, lsm6dso_read_temperature());
     }
 
     if (wifi_disconnect_flag == 1)
@@ -446,9 +448,7 @@ void value_update_cb(lv_timer_t *timer)
 // 主界面 任务函数
 static void main_page_task(void *pvParameters)
 {
-    int tm_cnt1 = 0;
-    lv_mutex = xSemaphoreCreateMutex(); // add mutex
-
+    uint16_t tm_cnt1 = 0;
     xEventGroupWaitBits(my_event_group, WIFI_GET_RTWEATHER_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
     vTaskDelay(pdMS_TO_TICKS(3000));
     lv_epaper_clean();
@@ -456,22 +456,27 @@ static void main_page_task(void *pvParameters)
     ESP_LOGI(TAG, "clean and draw main page!!!");
 
     lv_main_page();
-    vTaskDelay(pdMS_TO_TICKS(3000));
+    vTaskDelay(pdMS_TO_TICKS(5000));
 
     th_update_flag = 0;
     qwnow_update_flag = 0;
     qair_update_flag = 0;
     qwdaily_update_flag = 0;
 
-    lv_timer_create(value_update_cb, 1 * 60 * 100, NULL); // 创建一个lv_timer 每分钟更新一次数据
-
     reset_flag = 1; // 标记开机完成
+    xEventGroupSetBits(my_event_group,WIFI_MAIN_SCRE_OK_BIT);
 
     while (1)
     {
-        get_now_weather(); // 获取实时天气信息
-        printf("weather update time:%02d:%02d:%02d\n", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
-        vTaskDelay(pdMS_TO_TICKS(30 * 60 * 1000));
+        value_update_cb();
+        tm_cnt1++;
+        if (tm_cnt1 > 30)
+        {
+            get_now_weather(); // 获取实时天气信息
+            printf("weather update time:%02d:%02d:%02d\n", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+            tm_cnt1 = 0;
+        }
+        vTaskDelay(pdMS_TO_TICKS(60 * 1000));//run pre 1min
     }
 
     vTaskDelete(NULL);

@@ -59,16 +59,12 @@ static void disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_
         }
     }
 
-    // ESP_LOGI(TAG, "lvgl draw a image");
-
-    // EPD_FastInit();
-    // EPD_Display(Paint.Image);
-    // EPD_FastUpdate();
+    ESP_LOGI(TAG, "lvgl draw a image");
 
     EPD_Display(Paint.Image);
+    delay_ms(20);
     EPD_PartUpdate();
-	delay_ms(500);
-    // EPD_DeepSleep();
+	delay_ms(50);
 
     /*IMPORTANT!!!
      *Inform the graphics library that you are ready with the flushing*/

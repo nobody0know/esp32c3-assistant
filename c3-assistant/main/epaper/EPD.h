@@ -3,6 +3,7 @@
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_rom_sys.h"
 enum
 {
     PIN_NUM_MOSI = GPIO_NUM_5,
@@ -12,7 +13,7 @@ enum
     PIN_NUM_CS = GPIO_NUM_4,
 };
 
-#define delay_ms(x)  vTaskDelay(x / portTICK_PERIOD_MS)
+#define delay_ms(x)  esp_rom_delay_us(x * 1000)
 
 #define EPD_W	152 
 #define EPD_H	296

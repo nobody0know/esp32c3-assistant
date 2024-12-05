@@ -12,7 +12,7 @@
 #include "freertos/task.h"
 #include "driver/gpio.h"
 
-#define TIMER_WAKEUP_TIME_US    (2 * 1000 * 1000)
+#define TIMER_WAKEUP_TIME_US    (1 * 100 * 1000)
 
 static const char *TAG = "sleep_wakeup";
 

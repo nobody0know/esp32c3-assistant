@@ -15,6 +15,8 @@
 #include "pca9557/pca9557_driver.h"
 #include "esp_pm.h"
 #include "esp_sleep.h"
+#include "common.h"
+#include "sleep_wakeup.h"
 
 static const char *TAG = "MAIN INIT";
 
@@ -23,6 +25,7 @@ EventGroupHandle_t my_event_group;
 
 void sleep_init()
 {
+    xEventGroupWaitBits(my_event_group, WIFI_MAIN_SCRE_OK_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
     esp_sleep_enable_gpio_wakeup();
     esp_pm_config_t pm_config = {
         .max_freq_mhz = 80,
@@ -59,5 +62,4 @@ void app_main()
     // es8311_user_init();
 
     sleep_init();
-    
 }

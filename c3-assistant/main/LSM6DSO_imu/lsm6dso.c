@@ -64,6 +64,22 @@ int16_t lsm6dso_read_temperature()
     return temp_return;
 }
 
+int16_t lsm6dso_read_gyroscope()
+{
+    uint8_t gyro_data_raw[2] = {0};
+    int16_t gyro_x_data = 0;
+
+    // 读取 陀螺仪寄存器
+    ESP_ERROR_CHECK(lsm6dso_register_read(LSM6DSO_REG_OUTX_L_G, &gyro_data_raw[0], 1));
+    ESP_ERROR_CHECK(lsm6dso_register_read(LSM6DSO_REG_OUTX_H_G, &gyro_data_raw[1], 1));
+
+    gyro_x_data = (int16_t)((gyro_data_raw[1] << 8) | gyro_data_raw[0]);
+
+    printf("gyro is %d\n",gyro_x_data);
+
+    return 0;
+}
+
 esp_err_t lsm6dso_set_tilt_cal(void)
 {
     ESP_ERROR_CHECK(lsm6dso_register_write_byte(LSM6DSO_REG_FUNC_CFG_ACCESS, 0x80));
@@ -179,7 +195,7 @@ void imu_task(void *pvParameter)
 {
     float temperature = 0.0;
     extern EventGroupHandle_t my_event_group;
-    lsm6dso_set_active_det();
+    // lsm6dso_set_active_det();
     extern int8_t door_state;
     int8_t last_door_state = door_state;
     while (1)
@@ -191,14 +207,16 @@ void imu_task(void *pvParameter)
         // last_door_state = door_state;
         uint32_t io_num;
         static uint16_t isr_times = 0;
-        // if ((xQueueReceive(gpio_evt_queue, &io_num, 10)==pdTRUE))
-        // {
-        //     isr_times++;
-        //     printf("get gpio isr total:%d\n",isr_times);
-        // }
+        if ((xQueueReceive(gpio_evt_queue, &io_num, 10)==pdTRUE))
+        {
+            isr_times++;
+            printf("get gpio isr total:%d\n",isr_times);
+            lsm6dso_read_gyroscope();
+        }
+        // lsm6dso_read_gyroscope();
         // 读取环境温度
         // ESP_LOGI(TAG, "Reading temperature...");
-        esp_err_t ret = lsm6dso_read_temperature(&temperature);
+        // esp_err_t ret = lsm6dso_read_temperature(&temperature);
 
         // if (ret == ESP_OK)
         // {
@@ -209,7 +227,7 @@ void imu_task(void *pvParameter)
         //     ESP_LOGE(TAG, "Failed to read temperature. Error: %s", esp_err_to_name(ret));
         // }
         // lsm6dso_check_active_state();
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 }
 
