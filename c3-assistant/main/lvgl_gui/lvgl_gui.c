@@ -24,6 +24,7 @@
 #include "guider_customer_fonts.h"
 
 #include "gxhtc3.h"
+#include "lsm6dso.h"
 
 static const char *TAG = "LVGL_GUI";
 
@@ -399,8 +400,8 @@ void lv_main_page(void)
     ESP_LOGI(TAG, "weather is %s", qwnow_text);
 
     lv_week_show();
-
-    lv_label_set_text_fmt(guider_ui.screen_qweather_temp_label, "室外：%d℃\n室内：%d℃", qwnow_temp, get_temp());
+    // lsm6dso_read_temperature();
+    lv_label_set_text_fmt(guider_ui.screen_qweather_temp_label, "室外：%d℃\n室内：%d℃", qwnow_temp, lsm6dso_read_temperature());
 }
 
 // 主界面各值更新函数
@@ -428,7 +429,8 @@ void value_update_cb(lv_timer_t *timer)
         qwnow_update_flag = 0;
         lv_qweather_icon_show(); // 更新天气图标
         lv_label_set_text_fmt(guider_ui.screen_qweather_text_label, "%s", qwnow_text);
-        lv_label_set_text_fmt(guider_ui.screen_qweather_temp_label, "室外：%d℃\n室内：%d℃", qwnow_temp, get_temp());
+        // lsm6dso_read_temperature();
+        lv_label_set_text_fmt(guider_ui.screen_qweather_temp_label, "室外：%d℃\n室内：%d℃", qwnow_temp, lsm6dso_read_temperature());
     }
 
     if (wifi_disconnect_flag == 1)
@@ -454,13 +456,14 @@ static void main_page_task(void *pvParameters)
     ESP_LOGI(TAG, "clean and draw main page!!!");
 
     lv_main_page();
+    vTaskDelay(pdMS_TO_TICKS(3000));
 
     th_update_flag = 0;
     qwnow_update_flag = 0;
     qair_update_flag = 0;
     qwdaily_update_flag = 0;
 
-    lv_timer_create(value_update_cb, 1 * 60 * 1000, NULL); // 创建一个lv_timer 每分钟更新一次数据
+    lv_timer_create(value_update_cb, 1 * 60 * 100, NULL); // 创建一个lv_timer 每分钟更新一次数据
 
     reset_flag = 1; // 标记开机完成
 

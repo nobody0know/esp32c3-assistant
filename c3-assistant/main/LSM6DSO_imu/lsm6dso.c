@@ -42,7 +42,7 @@ esp_err_t lsm6dso_read_register(uint8_t reg_addr, uint8_t *data, size_t len)
 }
 
 // 读取温度数据
-esp_err_t lsm6dso_read_temperature(float *temperature)
+int16_t lsm6dso_read_temperature()
 {
     uint8_t temp_data[2] = {0};
     int16_t raw_temp = 0;
@@ -55,11 +55,13 @@ esp_err_t lsm6dso_read_temperature(float *temperature)
     // 合成 16 位温度数据
     raw_temp = (int16_t)((temp_data[1] << 8) | temp_data[0]);
 
-    printf("temp is L:%x H%x", temp_data[0], temp_data[1]);
-
     // 转换为摄氏度
-    *temperature = raw_temp / 256.0f + 25.0f;
-    return ESP_OK;
+    float temperature = raw_temp / 256.0f + 25.0f;
+    int16_t temp_return = (int16_t) temperature;
+
+    printf("temp is %f\n",temperature);
+
+    return temp_return;
 }
 
 esp_err_t lsm6dso_set_tilt_cal(void)
@@ -210,3 +212,5 @@ void imu_task(void *pvParameter)
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
+
+

@@ -95,3 +95,4 @@ extern esp_err_t i2c_master_init(void);
 
 void lsm6dso_init(void);
 void lsm6dso_fetch_angleFromAcc(t_sLSM6DSO *p);
+int16_t lsm6dso_read_temperature();
