@@ -54,7 +54,7 @@ static void event_handler(void *arg, esp_event_base_t event_base,
         {
             lv_label_set_text(label_wifi, "等待配网......");
             ESP_LOGW(TAG, "wifi connect error turn to esptouch!");
-            xTaskCreate(smartconfig_task, "smartconfig_task", 4096, NULL, 3, NULL);
+            xTaskCreate(smartconfig_task, "smartconfig_task", 4096, NULL, 8, NULL);
         }
         else
         {
@@ -218,7 +218,7 @@ void wifi_connect_task()
     bzero(&wifi_config, sizeof(wifi_config_t));
     memcpy(wifi_config.sta.ssid, wifi_ssid, sizeof(wifi_config.sta.ssid));
     memcpy(wifi_config.sta.password, wifi_password, sizeof(wifi_config.sta.password));
-    wifi_config.sta.listen_interval = 10;
+    wifi_config.sta.listen_interval = 5;
 
     // 启动WIFI
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));               // 设置工作模式为STA
@@ -229,7 +229,7 @@ void wifi_connect_task()
 
     if (wifi_config_flag == 0)
     {
-        xTaskCreate(smartconfig_task, "smartconfig_task", 4096, NULL, 3, NULL);
+        xTaskCreate(smartconfig_task, "smartconfig_task", 4096, NULL, 8, NULL);
     }
 
     ESP_LOGI(TAG, "wifi_init_sta finished.");

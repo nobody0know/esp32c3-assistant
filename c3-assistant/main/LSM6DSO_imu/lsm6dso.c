@@ -15,14 +15,14 @@ static void imu_task(void *pvParameter);
 
 esp_err_t lsm6dso_register_read(uint8_t reg_addr, uint8_t *data, size_t len)
 {
-    return i2c_master_write_read_device(I2C_MASTER_NUM, LSM6DSOW_SENSOR_ADDR, &reg_addr, 1, data, len, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
+    return i2c_master_write_read_device(I2C_MASTER_NUM, LSM6DSOW_SENSOR_ADDR, &reg_addr, 1, data, len, pdMS_TO_TICKS(I2C_MASTER_TIMEOUT_MS) );
 }
 
 esp_err_t lsm6dso_register_write_byte(uint8_t reg_addr, uint8_t data)
 {
     uint8_t write_buf[2] = {reg_addr, data};
 
-    return i2c_master_write_to_device(I2C_MASTER_NUM, LSM6DSOW_SENSOR_ADDR, write_buf, sizeof(write_buf), I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
+    return i2c_master_write_to_device(I2C_MASTER_NUM, LSM6DSOW_SENSOR_ADDR, write_buf, sizeof(write_buf), pdMS_TO_TICKS(I2C_MASTER_TIMEOUT_MS));
 }
 
 esp_err_t lsm6dso_read_register(uint8_t reg_addr, uint8_t *data, size_t len)

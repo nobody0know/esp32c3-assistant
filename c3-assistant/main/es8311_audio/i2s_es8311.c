@@ -16,6 +16,7 @@
 #include "es8311_config.h"
 #include "gpio_func.h"
 #include "common.h"
+#include "pca9557_driver.h"
 #include "lsm6dso.h"
 // #include "esp_efuse_table.h"
 
@@ -129,9 +130,10 @@ static void i2s_music(void *args)
             printf("gyro x is %d\n", gyro_x);
             if (door_state == 1 && abs(gyro_x) > 2000) // mean human has enter house
             {
-                ESP_LOGI(TAG,"play the sound");
-                // vTaskDelay(3000 / portTICK_PERIOD_MS);
-                es8311_power_on(es_handle);
+                vTaskDelay(2000 / portTICK_PERIOD_MS);
+                pca9557_set_audio_high();
+                es8311_codec_init();
+                vTaskDelay(1000 / portTICK_PERIOD_MS);
                 /* Write music to earphone */
                 ret = i2s_channel_write(tx_handle, data_ptr, music_pcm_end - data_ptr, &bytes_write, portMAX_DELAY);
                 if (ret != ESP_OK)
@@ -152,11 +154,11 @@ static void i2s_music(void *args)
                     abort();
                 }
                 data_ptr = (uint8_t *)music_pcm_start;
-                vTaskDelay(3000 / portTICK_PERIOD_MS);
-                es8311_power_down(es_handle);
+                vTaskDelay(5000 / portTICK_PERIOD_MS);
+                pca9557_set_audio_low();
             }
         }
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
     vTaskDelete(NULL);
 }
@@ -227,7 +229,7 @@ void es8311_user_init(void)
     {
         ESP_LOGI(TAG, "es8311 codec init success");
     }
-    es8311_power_down(es_handle);
+    pca9557_set_audio_low();
 #if CONFIG_ES8311_MODE_MUSIC
     /* Play a piece of music in music mode */
     xTaskCreate(i2s_music, "i2s_music", 4096, NULL, 5, NULL);
