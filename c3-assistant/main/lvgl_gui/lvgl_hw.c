@@ -59,7 +59,7 @@ static void disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_
         }
     }
 
-    ESP_LOGI(TAG, "lvgl draw a image");
+    // ESP_LOGI(TAG, "lvgl draw a image");
 
     EPD_Display(Paint.Image);
     delay_ms(20);

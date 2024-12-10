@@ -16,6 +16,7 @@
 #include "es8311_config.h"
 #include "gpio_func.h"
 #include "common.h"
+#include "lsm6dso.h"
 // #include "esp_efuse_table.h"
 
 extern QueueHandle_t gpio_evt_queue;
@@ -122,9 +123,14 @@ static void i2s_music(void *args)
         if ((xQueueReceive(gpio_evt_queue, &io_num, 10) == pdTRUE)) //||(xQueueReceive(imu_evt_queue, &atti_flag, 100)==pdTRUE))
         {
             door_state = -door_state;
-            if (door_state == 1) // mean human has enter house
+            int16_t gyro_x=0,gyro_y=0,gyro_z=0;
+            ESP_LOGI(TAG,"get imu/gpio INT isr");
+            lsm6dso_read_gyroscope(&gyro_x, &gyro_y, &gyro_z);
+            printf("gyro x is %d\n", gyro_x);
+            if (door_state == 1 && abs(gyro_x) > 2000) // mean human has enter house
             {
-                vTaskDelay(3000 / portTICK_PERIOD_MS);
+                ESP_LOGI(TAG,"play the sound");
+                // vTaskDelay(3000 / portTICK_PERIOD_MS);
                 es8311_power_on(es_handle);
                 /* Write music to earphone */
                 ret = i2s_channel_write(tx_handle, data_ptr, music_pcm_end - data_ptr, &bytes_write, portMAX_DELAY);
@@ -150,7 +156,7 @@ static void i2s_music(void *args)
                 es8311_power_down(es_handle);
             }
         }
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(500 / portTICK_PERIOD_MS);
     }
     vTaskDelete(NULL);
 }
@@ -197,6 +203,7 @@ static void i2s_echo(void *args)
 
 void es8311_user_init(void)
 {
+    /* Wait for wifi to get weather data */
     extern EventGroupHandle_t my_event_group;
     xEventGroupWaitBits(my_event_group, WIFI_GET_RTWEATHER_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
     printf("i2s es8311 codec ES8311 start\n-----------------------------\n");
