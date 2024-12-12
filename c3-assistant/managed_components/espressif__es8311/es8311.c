@@ -473,18 +473,23 @@ es8311_handle_t es8311_create(const i2c_port_t port, const uint16_t dev_addr)
 
 esp_err_t es8311_power_down(es8311_handle_t dev)
 {
-    ESP_RETURN_ON_ERROR(es8311_write_reg(dev, ES8311_SYSTEM_REG0D, 0xFC), TAG, "I2C read/write error");
-    ESP_RETURN_ON_ERROR(es8311_write_reg(dev, ES8311_SYSTEM_REG0E, 0x6A), TAG, "I2C read/write error");
-    ESP_RETURN_ON_ERROR(es8311_write_reg(dev, ES8311_SYSTEM_REG12, 0x02), TAG, "I2C read/write error");
+    ESP_RETURN_ON_ERROR(es8311_write_reg(dev, ES8311_SYSTEM_REG0D, 0xFC), TAG, "ES8311 I2C read/write error");
+    ESP_RETURN_ON_ERROR(es8311_write_reg(dev, ES8311_SYSTEM_REG0E, 0x6A), TAG, "ES8311 I2C read/write error");
+    ESP_RETURN_ON_ERROR(es8311_write_reg(dev, ES8311_SYSTEM_REG12, 0x02), TAG, "ES8311 I2C read/write error");
     ESP_RETURN_ON_ERROR(es8311_write_reg(dev, ES8311_RESET_REG00, 0x00), TAG, "ES8311 I2C read/write error");
+    ESP_RETURN_ON_ERROR(es8311_write_reg(dev, ES8311_SYSTEM_REG0F, 0xFF), TAG, "ES8311 I2C read/write error");
+    ESP_RETURN_ON_ERROR(es8311_write_reg(dev, ES8311_SYSTEM_REG13, 0x00), TAG, "ES8311 I2C read/write error"); 
+
     return ESP_OK;
 }
 
 esp_err_t es8311_power_on(es8311_handle_t dev)
 {
-    ESP_RETURN_ON_ERROR(es8311_write_reg(dev, ES8311_SYSTEM_REG0D, 0x01), TAG, "I2C read/write error"); // Power up analog circuitry - NOT default
-    ESP_RETURN_ON_ERROR(es8311_write_reg(dev, ES8311_SYSTEM_REG0E, 0x02), TAG, "I2C read/write error"); // Enable analog PGA, enable ADC modulator - NOT default
-    ESP_RETURN_ON_ERROR(es8311_write_reg(dev, ES8311_SYSTEM_REG12, 0x00), TAG, "I2C read/write error"); // power-up DAC - NOT default
+    ESP_RETURN_ON_ERROR(es8311_write_reg(dev, ES8311_SYSTEM_REG0D, 0x01), TAG, "ES8311 I2C read/write error"); // Power up analog circuitry - NOT default
+    ESP_RETURN_ON_ERROR(es8311_write_reg(dev, ES8311_SYSTEM_REG0E, 0x02), TAG, "ES8311 I2C read/write error"); // Enable analog PGA, enable ADC modulator - NOT default
+    ESP_RETURN_ON_ERROR(es8311_write_reg(dev, ES8311_SYSTEM_REG12, 0x00), TAG, "ES8311 I2C read/write error"); // power-up DAC - NOT default
     ESP_RETURN_ON_ERROR(es8311_write_reg(dev, ES8311_RESET_REG00, 0x80), TAG, "ES8311 I2C read/write error");
+    ESP_RETURN_ON_ERROR(es8311_write_reg(dev, ES8311_SYSTEM_REG0F, 0x00), TAG, "ES8311 I2C read/write error");
+    ESP_RETURN_ON_ERROR(es8311_write_reg(dev, ES8311_SYSTEM_REG13, 0x10), TAG, "ES8311 I2C read/write error"); 
     return ESP_OK;
 }

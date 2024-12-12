@@ -218,7 +218,7 @@ void wifi_connect_task()
     bzero(&wifi_config, sizeof(wifi_config_t));
     memcpy(wifi_config.sta.ssid, wifi_ssid, sizeof(wifi_config.sta.ssid));
     memcpy(wifi_config.sta.password, wifi_password, sizeof(wifi_config.sta.password));
-    wifi_config.sta.listen_interval = 5;
+    wifi_config.sta.listen_interval = 10;
 
     // 启动WIFI
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));               // 设置工作模式为STA

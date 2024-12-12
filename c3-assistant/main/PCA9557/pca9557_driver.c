@@ -36,14 +36,14 @@ esp_err_t pca9557_write(uint8_t reg_addr, uint8_t data)
 void pca9557_init(void)
 {
     // 设置PCA9557的配置寄存器，使P1为输出
-    pca9557_write(PCA9557_REG_CONFIG, 0xF9);  // 设置IO1为输出
+    pca9557_write(PCA9557_REG_CONFIG, 0xFD);  // 设置IO1为输出
     pca9557_write(PCA9557_REG_OUTPUT, 0x00);
 }
 
 // 设置P1输出高电平
 void pca9557_set_audio_high(void)
 {
-    pca9557_write(PCA9557_REG_OUTPUT, 0x06);  // 输出0x02 设置P1为高电平
+    pca9557_write(PCA9557_REG_OUTPUT, 0x02);  // 输出0x02 设置P1为高电平
 }
 
 // 设置P1输出高电平

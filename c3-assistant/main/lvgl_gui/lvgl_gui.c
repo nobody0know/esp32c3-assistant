@@ -448,7 +448,9 @@ void value_update_cb()
 // 主界面 任务函数
 static void main_page_task(void *pvParameters)
 {
-    uint16_t tm_cnt1 = 0;
+    uint16_t min_cnt = 0;
+    uint16_t hour_cnt = 0;
+    uint16_t day_cnt = 0;
     xEventGroupWaitBits(my_event_group, WIFI_GET_RTWEATHER_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
     vTaskDelay(pdMS_TO_TICKS(3000));
     lv_epaper_clean();
@@ -469,12 +471,21 @@ static void main_page_task(void *pvParameters)
     while (1)
     {
         value_update_cb();
-        tm_cnt1++;
-        if (tm_cnt1 > 30)
+        min_cnt++;
+        if (min_cnt > 30)
         {
             get_now_weather(); // 获取实时天气信息
-            printf("weather update time:%02d:%02d:%02d\n", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
-            tm_cnt1 = 0;
+            ESP_LOGI(TAG,"weather update time:%02d:%02d:%02d\n", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+            min_cnt = 0;
+            hour_cnt++;
+        }
+
+        // 每24小时更新一次NTP信息
+        if(hour_cnt > 24 * 2)
+        {
+            ESP_LOGI(TAG,"update NTP time!!!");
+            ntp_time_init();
+            hour_cnt = 0;
         }
         vTaskDelay(pdMS_TO_TICKS(60 * 1000));//run pre 1min
     }

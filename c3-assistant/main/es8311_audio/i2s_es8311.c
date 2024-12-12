@@ -102,37 +102,58 @@ static esp_err_t i2s_driver_init(void)
 }
 
 #if CONFIG_ES8311_MODE_MUSIC
+
+void init_audio_part(size_t bytes_write, uint8_t *data_ptr)
+{
+    i2s_driver_init();
+    /* (Optional) Disable TX channel and preload the data before enabling the TX channel,
+     * so that the valid data can be transmitted immediately */
+    ESP_ERROR_CHECK(i2s_channel_disable(tx_handle));
+    ESP_ERROR_CHECK(i2s_channel_preload_data(tx_handle, data_ptr, music_pcm_end - data_ptr, &bytes_write));
+    data_ptr += bytes_write; // Move forward the data pointer
+    ESP_ERROR_CHECK(i2s_channel_enable(tx_handle));
+    /* Enable the TX channel */
+
+    ESP_ERROR_CHECK(es8311_codec_init());
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+    pca9557_set_audio_high();
+    es8311_power_on(es_handle);
+}
+
+void deinit_audio_part(void)
+{
+    ESP_ERROR_CHECK(i2s_channel_disable(tx_handle));
+    ESP_ERROR_CHECK(i2s_channel_disable(rx_handle));
+    ESP_ERROR_CHECK(i2s_del_channel(tx_handle));
+    ESP_ERROR_CHECK(i2s_del_channel(rx_handle));
+    pca9557_set_audio_low();
+    es8311_power_down(es_handle);
+}
+
 static void i2s_music(void *args)
 {
     esp_err_t ret = ESP_OK;
     size_t bytes_write = 0;
     uint8_t *data_ptr = (uint8_t *)music_pcm_start;
     uint32_t io_num;
-    uint32_t atti_flag;
     int8_t door_state = -1;
 
-    /* (Optional) Disable TX channel and preload the data before enabling the TX channel,
-     * so that the valid data can be transmitted immediately */
-    ESP_ERROR_CHECK(i2s_channel_disable(tx_handle));
-    ESP_ERROR_CHECK(i2s_channel_preload_data(tx_handle, data_ptr, music_pcm_end - data_ptr, &bytes_write));
-    data_ptr += bytes_write; // Move forward the data pointer
-
-    /* Enable the TX channel */
-    ESP_ERROR_CHECK(i2s_channel_enable(tx_handle));
     while (1)
     {
         if ((xQueueReceive(gpio_evt_queue, &io_num, 10) == pdTRUE)) //||(xQueueReceive(imu_evt_queue, &atti_flag, 100)==pdTRUE))
         {
-            door_state = -door_state;
-            int16_t gyro_x=0,gyro_y=0,gyro_z=0;
-            ESP_LOGI(TAG,"get imu/gpio INT isr");
+            int16_t gyro_x = 0, gyro_y = 0, gyro_z = 0;
+            ESP_LOGI(TAG, "get imu/gpio INT isr");
             lsm6dso_read_gyroscope(&gyro_x, &gyro_y, &gyro_z);
-            printf("gyro x is %d\n", gyro_x);
-            if (door_state == 1 && abs(gyro_x) > 2000) // mean human has enter house
+            ESP_LOGI(TAG, "gyro x is %d\n", gyro_x);
+            if (abs(gyro_x) > 2000)
             {
-                vTaskDelay(2000 / portTICK_PERIOD_MS);
-                pca9557_set_audio_high();
-                es8311_codec_init();
+                door_state = -door_state;
+            }
+
+            if (door_state == 1) // mean human has enter house
+            {
+                init_audio_part(bytes_write, data_ptr);
                 vTaskDelay(1000 / portTICK_PERIOD_MS);
                 /* Write music to earphone */
                 ret = i2s_channel_write(tx_handle, data_ptr, music_pcm_end - data_ptr, &bytes_write, portMAX_DELAY);
@@ -154,8 +175,8 @@ static void i2s_music(void *args)
                     abort();
                 }
                 data_ptr = (uint8_t *)music_pcm_start;
-                vTaskDelay(5000 / portTICK_PERIOD_MS);
-                pca9557_set_audio_low();
+                vTaskDelay(1000 / portTICK_PERIOD_MS);
+                deinit_audio_part();
             }
         }
         vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -208,28 +229,7 @@ void es8311_user_init(void)
     /* Wait for wifi to get weather data */
     extern EventGroupHandle_t my_event_group;
     xEventGroupWaitBits(my_event_group, WIFI_GET_RTWEATHER_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
-    printf("i2s es8311 codec ES8311 start\n-----------------------------\n");
-    /* Initialize i2s peripheral */
-    if (i2s_driver_init() != ESP_OK)
-    {
-        ESP_LOGE(TAG, "i2s driver init failed");
-        abort();
-    }
-    else
-    {
-        ESP_LOGI(TAG, "i2s driver init success");
-    }
-    /* Initialize i2c peripheral and config es8311 codec by i2c */
-    if (es8311_codec_init() != ESP_OK)
-    {
-        ESP_LOGE(TAG, "es8311 codec init failed");
-        abort();
-    }
-    else
-    {
-        ESP_LOGI(TAG, "es8311 codec init success");
-    }
-    pca9557_set_audio_low();
+
 #if CONFIG_ES8311_MODE_MUSIC
     /* Play a piece of music in music mode */
     xTaskCreate(i2s_music, "i2s_music", 4096, NULL, 5, NULL);

@@ -51,8 +51,7 @@ void get_time_task(void *pvParameters)
     // 获取系统时间
     time(&now);
     localtime_r(&now, &timeinfo);
-
-ESP_LOGI(TAG,"DATA IS %d/%d/%d",timeinfo.tm_year,timeinfo.tm_mon,timeinfo.tm_mday);
+    // 格式化时间字符串
     strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
     ESP_LOGI(TAG, "The current date/time in Shanghai is: %s", strftime_buf);
 
