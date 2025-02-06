@@ -6,6 +6,8 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <sys/time.h>
+#include <time.h>
 #include "sdkconfig.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -22,6 +24,9 @@
 
 extern QueueHandle_t gpio_evt_queue;
 extern QueueHandle_t imu_evt_queue;
+extern struct tm timeinfo;
+
+uint16_t voice_volume = 80;
 
 static const char *TAG = "i2s_es8311";
 static const char err_reason[][30] = {"input param is invalid",
@@ -51,7 +56,7 @@ static esp_err_t es8311_codec_init(void)
 
     ESP_ERROR_CHECK(es8311_init(es_handle, &es_clk, ES8311_RESOLUTION_16, ES8311_RESOLUTION_16));
     ESP_RETURN_ON_ERROR(es8311_sample_frequency_config(es_handle, ES8311_SAMPLE_RATE * ES8311_MCLK_MULTIPLE, ES8311_SAMPLE_RATE), TAG, "set es8311 sample frequency failed");
-    ESP_RETURN_ON_ERROR(es8311_voice_volume_set(es_handle, 70, NULL), TAG, "set es8311 volume failed");
+    ESP_RETURN_ON_ERROR(es8311_voice_volume_set(es_handle, voice_volume, NULL), TAG, "set es8311 volume failed");
     ESP_RETURN_ON_ERROR(es8311_microphone_config(es_handle, false), TAG, "set es8311 microphone failed");
 #if CONFIG_ES8311_MODE_ECHO
     ESP_RETURN_ON_ERROR(es8311_microphone_gain_set(es_handle, ES8311_MIC_GAIN), TAG, "set es8311 microphone gain failed");
@@ -150,8 +155,7 @@ static void i2s_music(void *args)
             {
                 door_state = -door_state;
             }
-
-            if (door_state == 1) // mean human has enter house
+            if ((timeinfo.tm_hour >= 8 && timeinfo.tm_hour < 22) && door_state == 1) // mean human has enter house and time is between 8:00-22:00
             {
                 init_audio_part(bytes_write, data_ptr);
                 vTaskDelay(1000 / portTICK_PERIOD_MS);

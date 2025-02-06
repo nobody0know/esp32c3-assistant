@@ -36,7 +36,9 @@
         "cstdint": "c",
         "pca9557_driver.h": "c",
         "esp_pm.h": "c",
-        "gpio_func.h": "c"
+        "gpio_func.h": "c",
+        "i2s_common.h": "c",
+        "esp_heap_caps.h": "c"
     },
     "idf.espIdfPathWin": "C:\\Users\\lc201\\esp\\v5.3.1\\esp-idf",
     "idf.pythonBinPathWin": "C:\\Users\\lc201\\.espressif\\python_env\\idf5.3_py3.11_env\\Scripts\\python.exe",
@@ -49,7 +51,7 @@
     },
     "idf.gitPathWin": "C:\\Users\\lc201\\.espressif\\tools\\idf-git\\2.39.2\\cmd\\git.exe",
     "idf.flashType": "UART",
-    "idf.portWin": "COM2",
+    "idf.portWin": "COM3",
     "marscode.chatLanguage": "cn",
     
 }
