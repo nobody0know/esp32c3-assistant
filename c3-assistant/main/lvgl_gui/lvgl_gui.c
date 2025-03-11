@@ -400,7 +400,7 @@ void lv_main_page(void)
     ESP_LOGI(TAG, "weather is %s", qwnow_text);
 
     lv_week_show();
-    lv_label_set_text_fmt(guider_ui.screen_qweather_temp_label, "室外：%d℃\n室内：%02d℃", qwnow_temp, lsm6dso_read_temperature());
+    lv_label_set_text_fmt(guider_ui.screen_qweather_temp_label, "室外:%d℃\n室内:%02d℃", qwnow_temp, lsm6dso_read_temperature());
 }
 
 // 主界面各值更新函数
@@ -415,8 +415,8 @@ void value_update_cb()
     lv_label_set_text_fmt(guider_ui.screen_label_6, "%d/%d %d:%02d", timeinfo.tm_mon + 1, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min);
     lv_week_show();
 
-    ESP_LOGI(TAG,"update srceen value");
-    ESP_LOGI(TAG,"update srceen time:%02d:%02d:%02d\n", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+    // ESP_LOGI(TAG,"update srceen value");
+    // ESP_LOGI(TAG,"update srceen time:%02d:%02d:%02d\n", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
 
 
     // 更新实时天气
@@ -432,7 +432,7 @@ void value_update_cb()
         qwnow_update_flag = 0;
         lv_qweather_icon_show(); // 更新天气图标
         lv_label_set_text_fmt(guider_ui.screen_qweather_text_label, "%s", qwnow_text);
-        lv_label_set_text_fmt(guider_ui.screen_qweather_temp_label, "室外：%d℃\n室内：%02d℃", qwnow_temp, lsm6dso_read_temperature());
+        lv_label_set_text_fmt(guider_ui.screen_qweather_temp_label, "室外:%d℃\n室内:%02d℃", qwnow_temp, lsm6dso_read_temperature());
     }
 
     if (wifi_disconnect_flag == 1)

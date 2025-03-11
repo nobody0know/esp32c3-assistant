@@ -53,9 +53,9 @@ int qanow_level; // 实时空气质量等级
 
 #define MAX_HTTP_OUTPUT_BUFFER 2048
 
-#define QWEATHER_DAILY_URL "https://devapi.qweather.com/v7/weather/3d?&location=101280609&key=dc16e8bc7a0c4ecfb5dd150ed4743a6a"
-#define QWEATHER_NOW_URL "https://devapi.qweather.com/v7/weather/now?&location=101280609&key=dc16e8bc7a0c4ecfb5dd150ed4743a6a"
-#define QAIR_NOW_URL "https://devapi.qweather.com/v7/air/now?&location=101280609&key=dc16e8bc7a0c4ecfb5dd150ed4743a6a"
+#define QWEATHER_DAILY_URL "https://devapi.qweather.com/v7/weather/3d?&location=101280604&key=dc16e8bc7a0c4ecfb5dd150ed4743a6a"
+#define QWEATHER_NOW_URL "https://devapi.qweather.com/v7/weather/now?&location=101280604&key=dc16e8bc7a0c4ecfb5dd150ed4743a6a"
+#define QAIR_NOW_URL "https://devapi.qweather.com/v7/air/now?&location=101280604&key=dc16e8bc7a0c4ecfb5dd150ed4743a6a"
 
 esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 {
@@ -338,7 +338,7 @@ void get_now_weather(void)
             qwnow_humi = atoi(humidity);
             qwnow_icon = atoi(icon);
 
-            ESP_LOGI(TAG, "地区：深圳市坪山区");
+            ESP_LOGI(TAG, "地区：深圳市南山区");
             ESP_LOGI(TAG, "温度：%d", qwnow_temp);
             ESP_LOGI(TAG, "湿度：%d", qwnow_humi);
             ESP_LOGI(TAG, "图标：%d", qwnow_icon);
